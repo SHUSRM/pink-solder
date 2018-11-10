@@ -8,6 +8,7 @@
 #include "timer.h"
 #include "control.h"
 #include "can.h"
+#include "32mpu6050.h"
 
 uint8_t Timetick2ms = 0;
 
@@ -18,7 +19,7 @@ void Test_task(void)
 	switch(Timetick2ms)
 	{
 		case 1:
-
+			get_mpu_data();
 							
 			break;
 		 

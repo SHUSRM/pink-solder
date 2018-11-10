@@ -34,3 +34,6 @@ rm\timer.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 rm\timer.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 rm\timer.o: ..\Control\Inc\control.h
 rm\timer.o: ..\Control\Inc\can.h
+rm\timer.o: ..\Control\mpu\Inc\32mpu6050.h
+rm\timer.o: ..\Control\mpu\Inc\24iic.h
+rm\timer.o: ..\Control\mpu\Inc\sys.h
