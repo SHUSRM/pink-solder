@@ -104,7 +104,7 @@ void MX_TIM4_Init(void)
   TIM_OC_InitTypeDef sConfigOC;
 
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 84-1;
+  htim4.Init.Prescaler = 89;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 2000-1;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -172,7 +172,7 @@ void MX_TIM12_Init(void)
   TIM_OC_InitTypeDef sConfigOC;
 
   htim12.Instance = TIM12;
-  htim12.Init.Prescaler = 84-1;
+  htim12.Init.Prescaler = 89;
   htim12.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim12.Init.Period = 2500-1;
   htim12.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
