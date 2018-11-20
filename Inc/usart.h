@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : gpio.h
-  * Description        : This file contains all the functions prototypes for 
-  *                      the gpio  
+  * File Name          : USART.h
+  * Description        : This file provides code for the configuration
+  *                      of the USART instances.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -36,10 +36,9 @@
   *
   ******************************************************************************
   */
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __gpio_H
-#define __gpio_H
+#ifndef __usart_H
+#define __usart_H
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -49,28 +48,47 @@
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
+#include "sys.h"
+#include "control.h" 
+#include "pid.h"
 
 /* USER CODE END Includes */
 
-/* USER CODE BEGIN Private defines */
+extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart6;
 
-#define KEY PDin(10)
-	
-#define GREEN_LED PFout(14)
-#define RED_LED PEout(7)
+/* USER CODE BEGIN Private defines */
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
+
+
+extern uint8_t 	RX_PID_Count;
+extern uint8_t 	RX_PID_Buf[20];
+extern u8		pidReadBuf;
+extern u8		RX_PID_Sum;
 
 /* USER CODE END Private defines */
 
-void MX_GPIO_Init(void);
+extern void _Error_Handler(char *, int);
+
+void MX_UART4_Init(void);
+void MX_USART1_UART_Init(void);
+void MX_USART2_UART_Init(void);
+void MX_USART6_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+void Float2Byte(float *target,unsigned char *buf,unsigned char beg);
+void usart_send_char(u8 c);
+void sendDatatoPC(float *data, u8 n);
 
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ pinoutConfig_H */
+#endif /*__ usart_H */
 
 /**
   * @}

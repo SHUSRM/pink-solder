@@ -45,11 +45,22 @@
 
 /* USER CODE BEGIN Includes */
 
-
-
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
+
+#define BEEP_Pin GPIO_PIN_4
+#define BEEP_GPIO_Port GPIOB
+#define IIC_SDA_Pin GPIO_PIN_4
+#define IIC_SDA_GPIO_Port GPIOE
+#define IIC_SCL_Pin GPIO_PIN_5
+#define IIC_SCL_GPIO_Port GPIOE
+#define KEY_Pin GPIO_PIN_10
+#define KEY_GPIO_Port GPIOD
+#define GREEN_LED_Pin GPIO_PIN_14
+#define GREEN_LED_GPIO_Port GPIOF
+#define RED_LED_Pin GPIO_PIN_7
+#define RED_LED_GPIO_Port GPIOE
 
 /* ########################## Assert Selection ############################## */
 /**

@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : gpio.h
-  * Description        : This file contains all the functions prototypes for 
-  *                      the gpio  
+  * File Name          : CAN.h
+  * Description        : This file provides code for the configuration
+  *                      of the CAN instances.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -36,10 +36,9 @@
   *
   ******************************************************************************
   */
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __gpio_H
-#define __gpio_H
+#ifndef __can_H
+#define __can_H
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -49,28 +48,38 @@
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "sys.h"
 /* USER CODE END Includes */
 
+extern CAN_HandleTypeDef hcan1;
+
 /* USER CODE BEGIN Private defines */
+extern CAN_HandleTypeDef hcan1;
 
-#define KEY PDin(10)
-	
-#define GREEN_LED PFout(14)
-#define RED_LED PEout(7)
-
+extern CAN_TxHeaderTypeDef  Tx1Message;
+extern CAN_RxHeaderTypeDef  Rx1Message;
+extern u8 txData[8];
+extern u8 canRxDataBuf[8];
 /* USER CODE END Private defines */
 
-void MX_GPIO_Init(void);
+extern void _Error_Handler(char *, int);
+
+void MX_CAN1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+void CAN1_FilterInit(void);
+void CAN_GetMotoData(CAN_RxHeaderTypeDef *pHeader, uint8_t aData[]);
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan);
+
+void CAN_SetUnderpanMotorCurrent(int16_t iq1,int16_t iq2,int16_t iq3,int16_t iq4);
+void CAN_SetCloudMotorCurrent(int16_t iq1,int16_t iq2,int16_t iq3);
 
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ pinoutConfig_H */
+#endif /*__ can_H */
 
 /**
   * @}
