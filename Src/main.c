@@ -58,7 +58,7 @@
 
 u8 i;
 float a;
-float output[2];
+float output[3];
 
 /* USER CODE END PV */
 
@@ -120,13 +120,14 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	HAL_UART_Receive_DMA(&huart1,teledata_rx,sizeof(teledata_rx));				//遥控器接收数据通过DMA中断存入teledata				
 	HAL_UART_Receive_IT(&huart4, &pidReadBuf, 1);								//pid调节参数接收中断
-	HAL_UART_Receive_IT(&huart2, camera.Recieve,sizeof(camera.Recieve));		//开启视觉数据接收中断
-	HAL_UART_Receive_IT(&huart6, judge.Recieve,sizeof(judge.Recieve));			//开启裁判系统接收中断
+//	HAL_UART_Receive_IT(&huart2, camera.Recieve,sizeof(camera.Recieve));		//开启视觉数据接收中断
+//	HAL_UART_Receive_IT(&huart6, judge.Recieve,sizeof(judge.Recieve));			//开启裁判系统接收中断
 	MPU6050_Init();																//陀螺仪初始化
 	Gyro_OFFEST();																//陀螺仪校准
 	CAN1_FilterInit();
-	MOTO_ControlInit();
-
+	HAL_TIM_Base_Start_IT(&htim6);	
+	MOTO_ControlInit();			
+	GREEN_LED = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -137,13 +138,20 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-//		a += 0.1f;
-//		if(a > 3.14f)	a = -3.14f;
-//		output[0] = 500 * sinf(a);
-//		output[1] = 400 * sinf(a+1);
-//		sendDatatoPC(output, sizeof(output));
+		a += 0.1f;
+		if(a > 3.14f)	a = -3.14f;
+		//output[0] = cloudPitch.MechanicalAngle;//500 * sinf(a);
+		output[0] = underpan[2].TorqueCurrent;
+		output[1] = underpan[2].RotateSpeed;//4000 * sinf(a+1);
+		output[2] = underpan[2].CurrentOutput;
+		sendDatatoPC(output, sizeof(output));
+//		get_mpu_data();
+//		printf("%d    \r\n",sensor.Gyro.Origin.x);
 //		HAL_Delay(500);  
-
+//		delay_us(100000);
+		delay_ms(100);
+		GREEN_LED = ~GREEN_LED;
+//		prinf("%d   \r\n",cloudPitch.MechanicalAngle);
   }
   /* USER CODE END 3 */
 

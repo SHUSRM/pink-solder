@@ -14,8 +14,8 @@ static u16 fac_ms=0;//ms延时倍乘数,在ucos下,代表每个节拍的ms数
 void delay_init(u8 SYSCLK)
 {
 
-// 	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8);
-	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
+ 	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8 );
+//	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 	
 	fac_us=SYSCLK/8;		//不论是否使用ucos,fac_us都需要使用
 	    

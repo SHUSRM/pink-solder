@@ -2,6 +2,7 @@
 #include "usart.h"
 #include "math.h"
 #include "mpu6050.h"
+#include "delay.h"
 //#include "test_app.h"
 
 //初始化MPU6050
@@ -26,7 +27,7 @@ void Gyro_OFFEST(void)
 		tempgx += sensor.Gyro.Origin.x;
 		tempgy += sensor.Gyro.Origin.y;
 		tempgz += sensor.Gyro.Origin.z;
-		HAL_Delay(100);
+		delay_ms(100);
 	}
 	sensor.Gyro.Quiet.x = tempgx / 20;
 	sensor.Gyro.Quiet.y = tempgy / 20;
@@ -80,7 +81,7 @@ uint8_t MPU6050_Init(void)
 	uint8_t res;
 	IIC_Init();								 //初始化IIC总线
 	MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X80); //复位MPU6050
-	HAL_Delay(100);
+	delay_ms(100);
 	MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X00); //唤醒MPU6050
 	MPU_Set_Gyro_Fsr(3);					 //陀螺仪传感器,±2000dps
 	MPU_Set_Accel_Fsr(0);					 //加速度传感器,±2g

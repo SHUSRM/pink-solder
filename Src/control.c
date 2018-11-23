@@ -31,7 +31,7 @@ PID_t *pidAdjust;
 void MOTO_ControlInit()
 {
 	//选择上位机PID调参对象
-	pidAdjust = &(cloudYaw.AnglePID);
+	pidAdjust = &(underpan[2].SpeedPID);
 
 	cloudPitch.SetAngle = PITCH_MID;
 	cloudYaw.SetAngle = YAW_MID;
@@ -40,9 +40,9 @@ void MOTO_ControlInit()
 	for (int i = 0; i < 4; i++)
 	{
 		PID_StructInit(&(underpan[i].SpeedPID), POSITION_PID, CURRENT_LIM, 1000,
-					   2, 0.035f, 0.0f);
+					   0,0,0); //0.035f, 0.0f);
 		PID_StructInit(&(underpan[i].CurrentPID), POSITION_PID, CURRENT_LIM, 1000,
-					   1.8f, 0.02f, 0.0f);
+					   1.8f,0,0);// 0.02f, 0.0f);
 	}
 	PID_StructInit(&(cloudPitch.AnglePID), POSITION_PID, 5000, 1000,
 				   5, 0.01f, -1.3f);
@@ -77,17 +77,17 @@ void underpanPID()
 {
 	u8 i;
 	/********将遥控器数据接收********/
-	underpan[0].SetSpeed = (int16_t)(1.0 * (tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
-	underpan[1].SetSpeed = (int16_t)(1.0 * (tele_data.ch3 - tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
-	underpan[2].SetSpeed = (int16_t)(1.0 * (-tele_data.ch3 - tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
-	underpan[3].SetSpeed = (int16_t)(1.0 * (-tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
+	underpan[0].SetSpeed = 0;//(int16_t)(1.0 * (tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
+	underpan[1].SetSpeed = 0;//(int16_t)(1.0 * (tele_data.ch3 - tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
+	underpan[2].SetSpeed = 500;//(int16_t)(1.0 * (-tele_data.ch3 - tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
+	underpan[3].SetSpeed = 0;//(int16_t)(1.0 * (-tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
 
-	for (i = 0; i < 4; i++)
+	for (i = 2; i < 3; i++)
 	{
 		underpan[i].CurrentOutput = PID_Calc(&(underpan[i].SpeedPID),
 											 underpan[i].RotateSpeed, underpan[i].SetSpeed);
-		underpan[i].CurrentOutput = PID_Calc(&(underpan[i].CurrentPID),
-											 underpan[i].TorqueCurrent, underpan[i].CurrentOutput);
+//		underpan[i].CurrentOutput = PID_Calc(&(underpan[i].CurrentPID),
+//											 underpan[i].TorqueCurrent, underpan[i].CurrentOutput);
 	}
 }
 /**************云台pitch方向pid控制***************/
