@@ -25,6 +25,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
+#define ABS(x) ((x > 0) ? (x) : (-x))
+
 enum{
     LLAST	= 0,
     LAST 	= 1,
@@ -37,6 +39,7 @@ typedef struct __PID_t
 {
     float p;
     float i;
+	float i_change;
     float d;
     
     float set[3];				//目标值,包含NOW， LAST， LLAST上上次

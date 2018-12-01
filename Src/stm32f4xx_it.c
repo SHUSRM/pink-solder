@@ -37,6 +37,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "usart.h"
+#include "Kalman.h"
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -273,7 +274,7 @@ void UART4_IRQHandler(void)
 	}
 
 	timeout = 0;
-	while (HAL_UART_Receive_IT(&huart4, &pidReadBuf, 1) != HAL_OK) //一次处理完成之后，重新开启中断并设置RxXferCount为1
+	while (HAL_UART_Receive_IT(&huart4, &rxPID.pidReadBuf, 1) != HAL_OK) //一次处理完成之后，重新开启中断并设置RxXferCount为1
 	{
 		timeout++; //超时处理
 		if (timeout > HAL_MAX_DELAY)

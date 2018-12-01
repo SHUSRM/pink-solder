@@ -69,8 +69,6 @@ void MX_CAN1_Init(void);
 /* USER CODE BEGIN Prototypes */
 void CAN1_FilterInit(void);
 void CAN_GetMotoData(CAN_RxHeaderTypeDef *pHeader, uint8_t aData[]);
-void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan);
-
 void CAN_SetUnderpanMotorCurrent(int16_t iq1,int16_t iq2,int16_t iq3,int16_t iq4);
 void CAN_SetCloudMotorCurrent(int16_t iq1,int16_t iq2,int16_t iq3);
 

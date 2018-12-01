@@ -3,6 +3,9 @@
 #include "usart.h"
 #include "tim.h"
 #include "can.h"
+#include "math.h"
+
+u8 flag = 0;
 //定时器溢出中断
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -11,13 +14,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 	if (htim->Instance == TIM6)
 	{
-//		get_mpu_data();
-		underpanPID();
-		CAN_SetUnderpanMotorCurrent(underpan[0].CurrentOutput, underpan[1].CurrentOutput,
-									underpan[2].CurrentOutput, underpan[3].CurrentOutput);
-//		cloudPitchPID();
-//		cloudYawPID();
-//		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput, cloudYaw.CurrentOutput, 1);
+		flag = !flag;
+		if (flag)
+		{
+			get_mpu_data();
+			//卡尔曼滤波
+			KalmanFilter(atan2(sensor.Acc.Origin.x,sensor.Acc.Origin.z)*180/PI,-sensor.Gyro.Origin.y/16.4);						
+		}
+		get_mpu_data();
+		//卡尔曼滤波
+		KalmanFilter(atan2(sensor.Acc.Origin.x,sensor.Acc.Origin.z)*180/PI,-sensor.Gyro.Origin.y/16.4);				
+//		MOTO_UnderpanPID();
+//		CAN_SetUnderpanMotorCurrent(underpan[0].CurrentOutput, underpan[1].CurrentOutput,
+//									underpan[2].CurrentOutput, underpan[3].CurrentOutput);
+		MOTO_CloudPitchPID();
+		MOTO_CloudYawPID();
+		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
 	}
 }
 //void HAL_CAN_RxFifo0FullCallback(CAN_HandleTypeDef *hcan)
@@ -37,14 +49,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	}
 }
 
-float _f;
 char charBuf[4];
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	/************遥控器数据处理*************/
 	if (huart->Instance == USART1)
 	{
-		telecontroller_data();
+		TelecontrollerData();
 	}
 	/*************小电脑串口数据处理************/
 	if (huart->Instance == USART2)
@@ -116,51 +127,50 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	/*************PID参数串口数据处理***********/
 	else if (huart->Instance == UART4)
 	{
-		RX_PID_Buf[RX_PID_Count & 0x7f] = pidReadBuf;
+		rxPID.Buf[rxPID.Count & 0x7f] = rxPID.pidReadBuf;
 		//是否开始接收
-		if ((RX_PID_Count & 0x7f) == 0 && RX_PID_Buf[0] != '$')
+		if ((rxPID.Count & 0x7f) == 0 && rxPID.Buf[0] != '$')
 			return;
 
-		RX_PID_Count++;
+		rxPID.Count++;
 
-		if ((RX_PID_Count & 0x7f) == 8)
+		if ((rxPID.Count & 0x7f) == 8)
 		{
 			//接收正确
-			if (RX_PID_Sum == pidReadBuf)
+			if (rxPID.Sum == rxPID.pidReadBuf)
 			{
 				for (int i = 0; i < 4; i++)
-					charBuf[i] = RX_PID_Buf[i + 3];
+					charBuf[i] = rxPID.Buf[i + 3];
 
-				switch (RX_PID_Buf[1])
+				switch (rxPID.Buf[1])
 				{
 				case 'p':
-					memcpy(&pidAdjust->p, charBuf, 4);
-					if (RX_PID_Buf[2] == '-')
-						pidAdjust->p = -pidAdjust->p;
+					memcpy(&rxPID.pidAdjust->p, charBuf, 4);
+					if (rxPID.Buf[2] == '-')
+						rxPID.pidAdjust->p = -rxPID.pidAdjust->p;
 					break;
 				case 'i':
-					memcpy(&pidAdjust->i, charBuf, 4);
-					if (RX_PID_Buf[2] == '-')
-						pidAdjust->i = -pidAdjust->i;
+					memcpy(&rxPID.pidAdjust->i, charBuf, 4);
+					if (rxPID.Buf[2] == '-')
+						rxPID.pidAdjust->i = -rxPID.pidAdjust->i;
 					break;
 				case 'd':
-					memcpy(&pidAdjust->d, charBuf, 4);
-					if (RX_PID_Buf[2] == '-')
-						pidAdjust->d = -pidAdjust->d;
+					memcpy(&rxPID.pidAdjust->d, charBuf, 4);
+					if (rxPID.Buf[2] == '-')
+						rxPID.pidAdjust->d = -rxPID.pidAdjust->d;
 					break;
 				}
-				RX_PID_Sum = 0;
-				RX_PID_Count = 0;
-				printf("%.2f \n", cloudYaw.AnglePID.d);
+				rxPID.Sum = 0;
+				rxPID.Count = 0;
 			}
 			else
 			{
-				RX_PID_Sum = 0;
-				RX_PID_Count = 0;
+				rxPID.Sum = 0;
+				rxPID.Count = 0;
 			}
 		}
 		else
-			RX_PID_Sum += pidReadBuf;
+			rxPID.Sum += rxPID.pidReadBuf;
 	}
 	/******************裁判系统串口数据处理********************/
 	else if (huart->Instance == USART6)
@@ -170,5 +180,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 //void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 //{
-
+//	if(huart->ErrorCode == HAL_UART_ERROR_ORE)
+//	{
+//		
+//	}
 //}

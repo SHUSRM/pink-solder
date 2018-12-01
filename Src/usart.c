@@ -45,10 +45,10 @@
 
 /* USER CODE BEGIN 0 */
 
-uint8_t RX_PID_Count = 0;
-uint8_t RX_PID_Buf[20];
-u8		RX_PID_Sum = 0;
-u8		pidReadBuf;
+//uint8_t RX_PID_Count = 0;
+//uint8_t RX_PID_Buf[20];
+//u8		RX_PID_Sum = 0;
+//u8		pidReadBuf;
 
 /* USER CODE END 0 */
 
@@ -380,13 +380,15 @@ void Float2Byte(float *target,unsigned char *buf,unsigned char beg)
     buf[beg+2] = point[2];
     buf[beg+3] = point[3];
 }
-void sendDatatoPC(float *data, u8 n)
+// *data:	所发送数据数组，最大长度为6
+// n:		发送数据所占字节数
+void UART_SendDataToPC(float *data, u8 n)
 {
 	int8_t i = 0;
 	unsigned char *point;
 	point = (unsigned char*)data;	  //得到float的地址
-	
-//	printf("%d  %d \n",ARRAY_SIZE(data),sizeof(data));
+	if(n > 24)
+		n = 24;
 	usart_send_char('$');
 	usart_send_char(n * 0.25);
 //	

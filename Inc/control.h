@@ -6,12 +6,14 @@
 #include "pid.h"
 #include "mpu6050.h"
 #include "beep.h"
+#include "Kalman.h"
 
 #define CURRENT_LIM 4000				//电流最小值
 #define CURRENT_MAX 16000				//电流最大值
 #define SPEED_MAX 5000
-#define PITCH_MID  800					//云台pitch轴初值
-#define YAW_MID 300						//云台yaw轴初值
+#define PITCH_MID  7300					//云台pitch轴初值
+#define YAW_MID 930						//云台yaw轴初值
+#define PI 3.1415926f
  
 
 enum{
@@ -43,10 +45,10 @@ typedef struct
 
 typedef struct _moto
 {
-	uint16_t MechanicalAngle;		//转子机械角度
-	int16_t RotateSpeed;			//转子转速
-	int16_t TorqueCurrent;			//转矩电流
-	uint16_t MotorTemperature;		//电机温度
+	uint16_t Angle;		//转子机械角度
+	int16_t Speed;			//转子转速
+	int16_t Current;			//转矩电流
+	uint16_t Temperature;		//电机温度
 	
 	uint8_t CurrentFlag;
 	int16_t CurrentStore[10];
@@ -59,7 +61,7 @@ typedef struct _moto
 	PID_t SpeedPID;
 	PID_t CurrentPID;
 	PID_t AnglePID;
-//	int16_t MotorOutput;	
+	//int16_t SpeedOutput;	
 	int16_t CurrentOutput;
 
 }MotorPara;
@@ -67,10 +69,10 @@ typedef struct _moto
 	
 typedef struct
 {
-	uint16_t MechanicalAngle;//机械角度
+	uint16_t Angle;//机械角度
 	
 	int16_t Speed;//转矩电流测量
-	int16_t TorqueCurrent;//转矩电流给定
+	int16_t Current;//转矩电流给定
 	
 	int16_t Error[3];
 	int16_t MotorOutput;
@@ -78,10 +80,10 @@ typedef struct
 
 typedef struct
 {
-	uint16_t MechanicalAngle;		//机械角度
-	int16_t B_MechanicalAngle;		//变换后角度
-	int16_t RotateSpeed;			//转速
-	int16_t TorqueCurrent;			//转矩电流
+	uint16_t Angle;		//机械角度
+	int16_t B_Angle;		//变换后角度
+	int16_t Speed;			//转速
+	int16_t Current;			//转矩电流
 	int16_t iOut;
 
 	int16_t MotorOutput;
@@ -109,25 +111,35 @@ typedef struct
 //    uint8_t sum;
 } Judge;
 
+typedef struct
+{
+    uint8_t Count;
+	uint8_t Buf[20];
+	u8		Sum;
+	u8		pidReadBuf;
+	PID_t* 	pidAdjust;
+} RxPID;
+
 
 
 extern uint8_t teledata_rx[18];
 extern TeleconData tele_data;
 
-extern PID_t* pidAdjust;
+//extern PID_t* pidAdjust;
 extern MotorPara underpan[4];
 extern MotorPara cloudPitch;
 extern MotorPara cloudYaw;
 
+extern RxPID rxPID;
 extern DanParameter dan_para[1];
 extern Camera camera;
 extern Judge judge;
 
-void telecontroller_data(void);
+void TelecontrollerData(void);
 void MOTO_ControlInit(void);
-void underpanPID(void);
-void cloudPitchPID(void);
-void cloudYawPID(void);
+void MOTO_UnderpanPID(void);
+void MOTO_CloudPitchPID(void);
+void MOTO_CloudYawPID(void);
 
 
 

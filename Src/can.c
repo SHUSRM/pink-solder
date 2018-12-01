@@ -176,17 +176,17 @@ void CAN_GetMotoData(CAN_RxHeaderTypeDef *pHeader, uint8_t aData[])
 	switch (pHeader->StdId)
 	{
 	case 0x201:
-		underpan[0].MechanicalAngle = aData[0] << 8 | aData[1];
-		underpan[0].RotateSpeed = aData[2] << 8 | aData[3];
-		underpan[0].TorqueCurrent = aData[4] << 8 | aData[5];
-		underpan[0].MotorTemperature = aData[6];
+		underpan[0].Angle = aData[0] << 8 | aData[1];
+		underpan[0].Speed = aData[2] << 8 | aData[3];
+		underpan[0].Current = aData[4] << 8 | aData[5];
+		underpan[0].Temperature = aData[6];
 	
-		underpan[0].CurrentSum += underpan[0].TorqueCurrent;
+		underpan[0].CurrentSum += underpan[0].Current;
 
 		if (underpan[0].CurrentFlag == 1)
 			underpan[0].CurrentSum -= underpan[0].CurrentStore[underpan[0].CurrentCount];
 
-		underpan[0].CurrentStore[underpan[0].CurrentCount] = underpan[0].TorqueCurrent;
+		underpan[0].CurrentStore[underpan[0].CurrentCount] = underpan[0].Current;
 		underpan[0].CurrentCount++;
 		if (underpan[0].CurrentCount > 9)
 		{
@@ -197,15 +197,15 @@ void CAN_GetMotoData(CAN_RxHeaderTypeDef *pHeader, uint8_t aData[])
 		break;
 
 	case 0x202:
-		underpan[1].MechanicalAngle = aData[0] << 8 | aData[1];
-		underpan[1].RotateSpeed = aData[2] << 8 | aData[3];
-		underpan[1].TorqueCurrent = aData[4] << 8 | aData[5];
-		underpan[1].MotorTemperature = aData[6];
-		underpan[1].CurrentSum += underpan[1].TorqueCurrent;
+		underpan[1].Angle = aData[0] << 8 | aData[1];
+		underpan[1].Speed = aData[2] << 8 | aData[3];
+		underpan[1].Current = aData[4] << 8 | aData[5];
+		underpan[1].Temperature = aData[6];
+		underpan[1].CurrentSum += underpan[1].Current;
 	
 		if (underpan[1].CurrentFlag == 1)
 			underpan[1].CurrentSum -= underpan[1].CurrentStore[underpan[1].CurrentCount];
-		underpan[1].CurrentStore[underpan[1].CurrentCount] = underpan[1].TorqueCurrent;
+		underpan[1].CurrentStore[underpan[1].CurrentCount] = underpan[1].Current;
 		underpan[1].CurrentCount++;
 		if (underpan[1].CurrentCount > 9)
 		{
@@ -216,15 +216,15 @@ void CAN_GetMotoData(CAN_RxHeaderTypeDef *pHeader, uint8_t aData[])
 		break;
 
 	case 0x203:
-		underpan[2].MechanicalAngle = aData[0] << 8 | aData[1];
-		underpan[2].RotateSpeed = aData[2] << 8 | aData[3];
-		underpan[2].TorqueCurrent = aData[4] << 8 | aData[5];
-		underpan[2].MotorTemperature = aData[6];
-		underpan[2].CurrentSum += underpan[2].TorqueCurrent;
+		underpan[2].Angle = aData[0] << 8 | aData[1];
+		underpan[2].Speed = aData[2] << 8 | aData[3];
+		underpan[2].Current = aData[4] << 8 | aData[5];
+		underpan[2].Temperature = aData[6];
+		underpan[2].CurrentSum += underpan[2].Current;
 
 		if (underpan[2].CurrentFlag == 1)
 			underpan[2].CurrentSum -= underpan[2].CurrentStore[underpan[2].CurrentCount];
-		underpan[2].CurrentStore[underpan[2].CurrentCount] = underpan[2].TorqueCurrent;
+		underpan[2].CurrentStore[underpan[2].CurrentCount] = underpan[2].Current;
 		underpan[2].CurrentCount++;
 		if (underpan[2].CurrentCount > 9)
 		{
@@ -235,15 +235,15 @@ void CAN_GetMotoData(CAN_RxHeaderTypeDef *pHeader, uint8_t aData[])
 		break;
 
 	case 0x204:
-		underpan[3].MechanicalAngle = aData[0] << 8 | aData[1];
-		underpan[3].RotateSpeed = aData[2] << 8 | aData[3];
-		underpan[3].TorqueCurrent = aData[4] << 8 | aData[5];
-		underpan[3].MotorTemperature = aData[6];
+		underpan[3].Angle = aData[0] << 8 | aData[1];
+		underpan[3].Speed = aData[2] << 8 | aData[3];
+		underpan[3].Current = aData[4] << 8 | aData[5];
+		underpan[3].Temperature = aData[6];
 
-		underpan[3].CurrentSum += underpan[3].TorqueCurrent;
+		underpan[3].CurrentSum += underpan[3].Current;
 		if (underpan[3].CurrentFlag == 1)
 			underpan[3].CurrentSum -= underpan[3].CurrentStore[underpan[3].CurrentCount];
-		underpan[3].CurrentStore[underpan[3].CurrentCount] = underpan[3].TorqueCurrent;
+		underpan[3].CurrentStore[underpan[3].CurrentCount] = underpan[3].Current;
 		underpan[3].CurrentCount++;
 		if (underpan[3].CurrentCount > 9)
 		{
@@ -254,32 +254,32 @@ void CAN_GetMotoData(CAN_RxHeaderTypeDef *pHeader, uint8_t aData[])
 		break;
 	//pitch
 	case 0x205:
-		cloudPitch.MechanicalAngle = aData[0] << 8 | aData[1];
-		cloudPitch.RotateSpeed = aData[2] << 8 | aData[3];
-		cloudPitch.TorqueCurrent = aData[4] << 8 | aData[5];
+		cloudPitch.Angle = aData[0] << 8 | aData[1];
+		cloudPitch.Speed = aData[2] << 8 | aData[3];
+		cloudPitch.Current = aData[4] << 8 | aData[5];
 
-//		if (cloud_para[0].MechanicalAngle < 4096)
-//			cloud_para[0].B_MechanicalAngle = cloud_para[0].MechanicalAngle;
+//		if (cloud_para[0].Angle < 4096)
+//			cloud_para[0].B_Angle = cloud_para[0].Angle;
 
-//		if (cloud_para[0].MechanicalAngle > 4096)
-//			cloud_para[0].B_MechanicalAngle = cloud_para[0].MechanicalAngle - 8192;
+//		if (cloud_para[0].Angle > 4096)
+//			cloud_para[0].B_Angle = cloud_para[0].Angle - 8192;
 
 		break;
 	//yaw
 	case 0x206:
-		cloudYaw.MechanicalAngle = aData[0] << 8 | aData[1];
-		cloudYaw.RotateSpeed = aData[2] << 8 | aData[3];
-		cloudYaw.TorqueCurrent = aData[4] << 8 | aData[5];
+		cloudYaw.Angle = aData[0] << 8 | aData[1];
+		cloudYaw.Speed = aData[2] << 8 | aData[3];
+		cloudYaw.Current = aData[4] << 8 | aData[5];
 
-//		if (cloud_para[1].MechanicalAngle < 4096)
-//			cloud_para[1].B_MechanicalAngle = cloud_para[1].MechanicalAngle;
+//		if (cloud_para[1].Angle < 4096)
+//			cloud_para[1].B_Angle = cloud_para[1].Angle;
 
-//		if (cloud_para[1].MechanicalAngle > 4096)
-//			cloud_para[1].B_MechanicalAngle = cloud_para[1].MechanicalAngle - 8192;
+//		if (cloud_para[1].Angle > 4096)
+//			cloud_para[1].B_Angle = cloud_para[1].Angle - 8192;
 //		break;
 
 	case 0x207:
-		dan_para[0].MechanicalAngle = aData[0] << 8 | aData[1];
+		dan_para[0].Angle = aData[0] << 8 | aData[1];
 		dan_para[0].Speed = aData[2] << 8 | aData[3];
 		break;
 	}

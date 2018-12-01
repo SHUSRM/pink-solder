@@ -14,7 +14,7 @@
 #include <math.h>
 //#include "cmsis_os.h"
 
-#define ABS(x) ((x > 0) ? (x) : (-x))
+
 
 void abs_limit(float *a, float ABS_MAX)
 {
@@ -117,7 +117,7 @@ float PID_SpecialCalc(PID_t *pid, float get, float set, float gyro)
 			pid->iout += pid->i * pid->err[NOW];
 		else
 			pid->iout = 0;
-		pid->dout = -pid->d * gyro / 100.0f;
+		pid->dout = -pid->d * gyro ;// 100.0f;
 		abs_limit(&(pid->iout), pid->IntegralLimit);
 		pid->pos_out = pid->pout + pid->iout + pid->dout;
 		abs_limit(&(pid->pos_out), pid->MaxOutput);

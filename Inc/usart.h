@@ -63,10 +63,10 @@ extern UART_HandleTypeDef huart6;
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
 
 
-extern uint8_t 	RX_PID_Count;
-extern uint8_t 	RX_PID_Buf[20];
-extern u8		pidReadBuf;
-extern u8		RX_PID_Sum;
+//extern uint8_t 	RX_PID_Count;
+//extern uint8_t 	RX_PID_Buf[20];
+//extern u8		pidReadBuf;
+//extern u8		RX_PID_Sum;
 
 /* USER CODE END Private defines */
 
@@ -81,7 +81,7 @@ void MX_USART6_UART_Init(void);
 
 void Float2Byte(float *target,unsigned char *buf,unsigned char beg);
 void usart_send_char(u8 c);
-void sendDatatoPC(float *data, u8 n);
+void UART_SendDataToPC(float *data, u8 n);
 
 /* USER CODE END Prototypes */
 

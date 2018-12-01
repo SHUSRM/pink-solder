@@ -39,7 +39,7 @@ void get_mpu_data(void)
 	MPU_Get_Accelerometer(&sensor.Acc.Origin.x, &sensor.Acc.Origin.y, &sensor.Acc.Origin.z);
 	sensor.Gyro.Radian.x = ((sensor.Gyro.Origin.x - sensor.Gyro.Quiet.x) * 1000 >> 15); //得到弧度
 	sensor.Gyro.Radian.y = ((sensor.Gyro.Origin.y - sensor.Gyro.Quiet.y) * 1000 >> 15);
-	sensor.Gyro.Radian.z = ((sensor.Gyro.Origin.z - sensor.Gyro.Quiet.z) * 1000 >> 15);
+	sensor.Gyro.Radian.z = (sensor.Gyro.Origin.z - sensor.Gyro.Quiet.z);// * 1000 >> 14);
 }
 
 //得到陀螺仪值(原始值)
