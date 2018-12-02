@@ -7,6 +7,8 @@
 #include "mpu6050.h"
 #include "beep.h"
 #include "Kalman.h"
+#include "usart.h"
+#include "delay.h"
 
 #define CURRENT_LIM 4000				//电流最小值
 #define CURRENT_MAX 16000				//电流最大值
@@ -140,7 +142,7 @@ void MOTO_ControlInit(void);
 void MOTO_UnderpanPID(void);
 void MOTO_CloudPitchPID(void);
 void MOTO_CloudYawPID(void);
-
+void IMU_Init(void);
 
 
 #endif

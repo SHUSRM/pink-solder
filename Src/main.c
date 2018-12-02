@@ -114,21 +114,25 @@ int main(void)
   MX_USART6_UART_Init();
   MX_USART2_UART_Init();
   MX_TIM3_Init();
+  MX_USART3_UART_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 	MPU6050_Init();																//陀螺仪初始化
-	Gyro_OFFEST();	
+	Gyro_OFFEST();																//陀螺仪校准
+	IMU_Init();
 	HAL_UART_Receive_DMA(&huart1,teledata_rx,sizeof(teledata_rx));				//遥控器接收数据通过DMA中断存入teledata				
-	HAL_UART_Receive_IT(&huart4, &rxPID.pidReadBuf, 1);								//pid调节参数接收中断
+	HAL_UART_Receive_IT(&huart4, &rxPID.pidReadBuf, 1);							//pid调节参数接收中断
+	HAL_UART_Receive_IT(&huart3, &sensor.mpuReadBuf, 1);								//pid调节参数接收中断
 //	HAL_UART_Receive_IT(&huart2, camera.Recieve,sizeof(camera.Recieve));		//开启视觉数据接收中断
 //	HAL_UART_Receive_IT(&huart6, judge.Recieve,sizeof(judge.Recieve));			//开启裁判系统接收中断
-																//陀螺仪校准
+																
 	CAN1_FilterInit();
 	HAL_TIM_Base_Start_IT(&htim6);	
 	MOTO_ControlInit();			
 	GREEN_LED = 0;
+	
 	
 	//选择上位机PID调参对象
 	rxPID.pidAdjust = &(cloudYaw.AnglePID);
@@ -151,12 +155,12 @@ int main(void)
 //		output[1] = underpan[2].Angle;//4000 * sinf(a+1);			
 //		output[2] = underpan[2].SetSpeed;
 //		output[3] = underpan[2].Current ;
-		output[0] = gyroKal;
-		output[1] = sensor.Gyro.Origin.y;//4000 * sinf(a+1);	
-		output[2] = cloudPitch.Speed;
-		output[2] = cloudPitch.AnglePID.dout;
-		output[4] = cloudYaw.Angle;
-		output[5] = cloudPitch.AnglePID.i*100;
+		output[0] = sensor.Aoto.GyroX;
+//		output[1] = sensor.Gyro.Origin.y;//4000 * sinf(a+1);	
+//		output[2] = cloudPitch.Speed;
+//		output[2] = cloudPitch.AnglePID.dout;
+//		output[4] = cloudYaw.Angle;
+//		output[5] = cloudPitch.AnglePID.i*100;
 		UART_SendDataToPC(output, sizeof(output));
 //		get_mpu_data();
 //		printf("%d    \r\n",sensor.Gyro.Origin.x);

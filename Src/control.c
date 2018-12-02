@@ -133,3 +133,20 @@ void MOTO_CloudYawPID()
 	cloudYaw.CurrentOutput = PID_SpecialCalc(&(cloudYaw.AnglePID),
 											 cloudYaw.Angle, cloudYaw.SetAngle, sensor.Gyro.Origin.x);
 }
+
+void IMU_Init()
+{
+	//角度初始化指令，0XFF,0XAA,0X01,0X04,0X00
+	u8 cmd1[5] = {0XFF,0XAA,0X01,0X04,0X00};
+	//角度初始化 使 Z 轴角度归零  0xFF 0xAA 0x52
+	u8 cmd[3] = {0XFF,0XAA,0X52};
+	//55 53 3F 2B D6 DD 26 3F 64 
+	HAL_UART_Transmit(&huart3,cmd,3,1000);
+//	//HAL_UART_Transmit(&huart1,cmd,3,1000);
+//	delay_ms(5);
+//	HAL_UART_Transmit(&huart3,cmd1,5,1000);
+//	delay_ms(5);
+//	HAL_UART_Transmit(&huart3,cmd1,5,1000);
+	
+	delay_ms(10);
+}

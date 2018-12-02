@@ -106,10 +106,23 @@ struct _trans
 	
 };
 
+typedef struct _auto
+{
+	float GyroZ;
+	float GyroY;
+	float GyroX;
+	
+}Auto;
+
 struct _sensor
 {
 	struct _trans Acc;
-	struct _trans Gyro;
+	struct _trans Gyro;	
+	Auto	Aoto;
+	uint16_t RxCount;
+	uint8_t RxBuf[20];
+	u8		mpuReadBuf;
+	u8		RxSum;
 };
 
 extern struct _sensor sensor;

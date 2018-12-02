@@ -27,9 +27,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //		MOTO_UnderpanPID();
 //		CAN_SetUnderpanMotorCurrent(underpan[0].CurrentOutput, underpan[1].CurrentOutput,
 //									underpan[2].CurrentOutput, underpan[3].CurrentOutput);
-		MOTO_CloudPitchPID();
-		MOTO_CloudYawPID();
-		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
+//		MOTO_CloudPitchPID();
+//		MOTO_CloudYawPID();
+//		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
 	}
 }
 //void HAL_CAN_RxFifo0FullCallback(CAN_HandleTypeDef *hcan)
@@ -122,6 +122,39 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			}
 			camera.Count = 0;
 			break;
+		}
+	}
+	else if(huart->Instance == USART3)
+	{
+		if ((sensor.RxCount & 0x8000) == 0) //接收未完成
+		{
+			sensor.RxBuf[sensor.RxCount & 0X3FFF] = sensor.mpuReadBuf;
+
+			if ((sensor.RxCount & 0X3FFF) == 0 && sensor.RxBuf[0] != 0x55)
+				return; //第 0 号数据不是帧头，跳过
+			if ((sensor.RxCount & 0X3FFF) == 1 && sensor.RxBuf[1] != 0x52)
+				return; //第 2 号数据不是角度，跳过
+
+			sensor.RxCount++;
+
+			if ((sensor.RxCount & 0X3FFF) == 11)
+			{
+				for (int i = 0; i < 10; i++)
+					sensor.RxSum += sensor.RxBuf[i];
+
+				if (sensor.RxSum == sensor.RxBuf[10])
+				{
+					sensor.RxCount |= 0x8000;
+					
+					sensor.Aoto.GyroX = ((float)((sensor.RxBuf[2] << 8) | sensor.RxBuf[3])) / 32768 * 2000;
+					sensor.Aoto.GyroY = ((float)((sensor.RxBuf[4] << 8) | sensor.RxBuf[5])) / 32768 * 2000;
+					sensor.Aoto.GyroZ = ((float)((sensor.RxBuf[6] << 8) | sensor.RxBuf[7])) / 32768 * 2000;
+					sensor.RxCount = 0;
+				}
+				
+				else
+					sensor.RxCount = 0;
+			}
 		}
 	}
 	/*************PID参数串口数据处理***********/
