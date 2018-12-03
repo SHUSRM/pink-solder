@@ -126,6 +126,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 	else if(huart->Instance == USART3)
 	{
+	#if 0
 		if ((sensor.RxCount & 0x8000) == 0) //接收未完成
 		{
 			sensor.RxBuf[sensor.RxCount & 0X3FFF] = sensor.mpuReadBuf;
@@ -133,8 +134,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			if ((sensor.RxCount & 0X3FFF) == 0 && sensor.RxBuf[0] != 0x55)
 				return; //第 0 号数据不是帧头，跳过
 			if ((sensor.RxCount & 0X3FFF) == 1 && sensor.RxBuf[1] != 0x52)
+			{
+				sensor.RxCount = 0;
 				return; //第 2 号数据不是角度，跳过
-
+			}
+			
 			sensor.RxCount++;
 
 			if ((sensor.RxCount & 0X3FFF) == 11)
@@ -146,15 +150,37 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				{
 					sensor.RxCount |= 0x8000;
 					
-					sensor.Aoto.GyroX = ((float)((sensor.RxBuf[2] << 8) | sensor.RxBuf[3])) / 32768 * 2000;
-					sensor.Aoto.GyroY = ((float)((sensor.RxBuf[4] << 8) | sensor.RxBuf[5])) / 32768 * 2000;
-					sensor.Aoto.GyroZ = ((float)((sensor.RxBuf[6] << 8) | sensor.RxBuf[7])) / 32768 * 2000;
+					sensor.Auto.GyroX = ((short)(sensor.RxBuf[3] << 8 | sensor.RxBuf[2])) / 32768.0 * 2000;
+					sensor.Auto.GyroY = ((short)((sensor.RxBuf[5] << 8) | sensor.RxBuf[4])) / 32768.0 * 2000;
+					sensor.Auto.GyroZ = ((short)((sensor.RxBuf[7] << 8) | sensor.RxBuf[6])) / 32768.0 * 2000;
 					sensor.RxCount = 0;
+					sensor.RxSum = 0;
 				}
 				
 				else
+				{
 					sensor.RxCount = 0;
+					sensor.RxSum = 0;
+				}
 			}
+		}
+	#endif
+		if(sensor.RxBuf[11] == 0x55 && sensor.RxBuf[12] == 0x52)
+		{
+			for (int i = 0; i < 10; i++)
+					sensor.RxSum += sensor.RxBuf[i+11];
+			if (sensor.RxSum == sensor.RxBuf[21])
+			{
+				sensor.Auto.GyroX = ((short)(sensor.RxBuf[14] << 8 | sensor.RxBuf[13])) / 32768.0 * 2000;
+				sensor.Auto.GyroY = ((short)((sensor.RxBuf[16] << 8) | sensor.RxBuf[15])) / 32768.0 * 2000;
+				sensor.Auto.GyroZ = ((short)((sensor.RxBuf[18] << 8) | sensor.RxBuf[17])) / 32768.0 * 2000;
+				sensor.RxSum = 0;
+			}	
+		}
+		else
+		{
+			IMU_Init();
+			HAL_UART_Receive_DMA(&huart3,sensor.RxBuf,sizeof(sensor.RxBuf));
 		}
 	}
 	/*************PID参数串口数据处理***********/

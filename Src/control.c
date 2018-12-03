@@ -80,12 +80,12 @@ void MOTO_UnderpanPID()
 {
 	u8 i;
 	/********将遥控器数据接收********/
-	underpan[0].SetSpeed = 0;//(int16_t)(1.0 * (tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
+	underpan[0].SetSpeed = 500;//(int16_t)(1.0 * (tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
 	underpan[1].SetSpeed = 0;//(int16_t)(1.0 * (tele_data.ch3 - tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
 	//underpan[2].SetSpeed = 0;//(int16_t)(1.0 * (-tele_data.ch3 - tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
 	underpan[3].SetSpeed = 0;//(int16_t)(1.0 * (-tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
 
-	for (i = 2; i < 3; i++)
+	for (i = 0; i < 1; i++)
 	{
 //		underpan[i].SetSpeed = PID_Calc(&(underpan[i].AnglePID),
 //											 underpan[i].Angle, 4696);
@@ -137,16 +137,11 @@ void MOTO_CloudYawPID()
 void IMU_Init()
 {
 	//角度初始化指令，0XFF,0XAA,0X01,0X04,0X00
-	u8 cmd1[5] = {0XFF,0XAA,0X01,0X04,0X00};
+	//u8 cmd1[5] = {0XFF,0XAA,0X01,0X04,0X00};
 	//角度初始化 使 Z 轴角度归零  0xFF 0xAA 0x52
 	u8 cmd[3] = {0XFF,0XAA,0X52};
 	//55 53 3F 2B D6 DD 26 3F 64 
 	HAL_UART_Transmit(&huart3,cmd,3,1000);
-//	//HAL_UART_Transmit(&huart1,cmd,3,1000);
-//	delay_ms(5);
-//	HAL_UART_Transmit(&huart3,cmd1,5,1000);
-//	delay_ms(5);
-//	HAL_UART_Transmit(&huart3,cmd1,5,1000);
 	
 	delay_ms(10);
 }

@@ -122,9 +122,9 @@ int main(void)
 	MPU6050_Init();																//陀螺仪初始化
 	Gyro_OFFEST();																//陀螺仪校准
 	IMU_Init();
+	HAL_UART_Receive_DMA(&huart3,sensor.RxBuf,sizeof(sensor.RxBuf));			//MPU初始化完成后立刻开启DMA接收防止接收不完整数据
 	HAL_UART_Receive_DMA(&huart1,teledata_rx,sizeof(teledata_rx));				//遥控器接收数据通过DMA中断存入teledata				
 	HAL_UART_Receive_IT(&huart4, &rxPID.pidReadBuf, 1);							//pid调节参数接收中断
-	HAL_UART_Receive_IT(&huart3, &sensor.mpuReadBuf, 1);								//pid调节参数接收中断
 //	HAL_UART_Receive_IT(&huart2, camera.Recieve,sizeof(camera.Recieve));		//开启视觉数据接收中断
 //	HAL_UART_Receive_IT(&huart6, judge.Recieve,sizeof(judge.Recieve));			//开启裁判系统接收中断
 																
@@ -153,10 +153,11 @@ int main(void)
 //		output[2] = atan2(sensor.Acc.Origin.x,sensor.Acc.Origin.z)*180/3.1415926f;
 //		output[0] = underpan[2].Speed;
 //		output[1] = underpan[2].Angle;//4000 * sinf(a+1);			
-//		output[2] = underpan[2].SetSpeed;
-//		output[3] = underpan[2].Current ;
-		output[0] = sensor.Aoto.GyroX;
-//		output[1] = sensor.Gyro.Origin.y;//4000 * sinf(a+1);	
+//		output[2] = underpan[0].CurrentOutput;
+//		output[3] = underpan[0].Current ;
+		output[0] = sensor.Auto.GyroX;
+		output[1] = sensor.Auto.GyroY;//4000 * sinf(a+1);	
+		output[2] = sensor.Auto.GyroZ;
 //		output[2] = cloudPitch.Speed;
 //		output[2] = cloudPitch.AnglePID.dout;
 //		output[4] = cloudYaw.Angle;

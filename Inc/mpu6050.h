@@ -118,9 +118,9 @@ struct _sensor
 {
 	struct _trans Acc;
 	struct _trans Gyro;	
-	Auto	Aoto;
+	Auto	Auto;
 	uint16_t RxCount;
-	uint8_t RxBuf[20];
+	uint8_t RxBuf[33];
 	u8		mpuReadBuf;
 	u8		RxSum;
 };
