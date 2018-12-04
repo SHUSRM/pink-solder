@@ -41,6 +41,7 @@
 #include "stm32f4xx_hal.h"
 #include "can.h"
 #include "dma.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -115,14 +116,16 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM3_Init();
   MX_USART3_UART_Init();
+  MX_SPI5_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 	MPU6050_Init();																//陀螺仪初始化
-	Gyro_OFFEST();																//陀螺仪校准
+	MPU6050_GyroOffest();																//陀螺仪校准
+	MPU6500_Init();
 	IMU_Init();
-	HAL_UART_Receive_DMA(&huart3,sensor.RxBuf,sizeof(sensor.RxBuf));			//MPU初始化完成后立刻开启DMA接收防止接收不完整数据
+	HAL_UART_Receive_DMA(&huart3,mpu6050.RxBuf,sizeof(mpu6050.RxBuf));			//MPU初始化完成后立刻开启DMA接收防止接收不完整数据
 	HAL_UART_Receive_DMA(&huart1,teledata_rx,sizeof(teledata_rx));				//遥控器接收数据通过DMA中断存入teledata				
 	HAL_UART_Receive_IT(&huart4, &rxPID.pidReadBuf, 1);							//pid调节参数接收中断
 //	HAL_UART_Receive_IT(&huart2, camera.Recieve,sizeof(camera.Recieve));		//开启视觉数据接收中断
@@ -130,7 +133,7 @@ int main(void)
 																
 	CAN1_FilterInit();
 	HAL_TIM_Base_Start_IT(&htim6);	
-	MOTO_ControlInit();			
+	MOTO_PIDInit();			
 	GREEN_LED = 0;
 	
 	
@@ -148,23 +151,28 @@ int main(void)
   /* USER CODE BEGIN 3 */
 		a += 0.1f;
 		if(a > 3.14f)	a = -3.14f;
-//		output[0] =sensor.Acc.Origin.x; //500 * sinf(a);
+//		output[0] =mpu6050.Acc.Origin.x; //500 * sinf(a);
 //		output[0] = angleKal;					
-//		output[2] = atan2(sensor.Acc.Origin.x,sensor.Acc.Origin.z)*180/3.1415926f;
+//		output[2] = atan2(mpu6050.Acc.Origin.x,sensor.Acc.Origin.z)*180/3.1415926f;
 //		output[0] = underpan[2].Speed;
 //		output[1] = underpan[2].Angle;//4000 * sinf(a+1);			
 //		output[2] = underpan[0].CurrentOutput;
 //		output[3] = underpan[0].Current ;
-		output[0] = sensor.Auto.GyroX;
-		output[1] = sensor.Auto.GyroY;//4000 * sinf(a+1);	
-		output[2] = sensor.Auto.GyroZ;
+//		output[0] = mpu6050.Auto.GyroX;
+//		output[1] = mpu6050.Auto.GyroY;//4000 * sinf(a+1);	
+//		output[2] = mpu6050.Auto.GyroZ;
+		output[0] = mpu6500.PitchK.Angle;
+		output[1] = mpu6500.RollK.Angle;//4000 * sinf(a+1);	
+		output[2] = atan2(mpu6500.AccX,mpu6500.AccZ)*180/PI;
+		output[3] = mpu6500.GyroY;
+		output[4] = mpu6500.GyroZ;
 //		output[2] = cloudPitch.Speed;
 //		output[2] = cloudPitch.AnglePID.dout;
 //		output[4] = cloudYaw.Angle;
 //		output[5] = cloudPitch.AnglePID.i*100;
 		UART_SendDataToPC(output, sizeof(output));
-//		get_mpu_data();
-//		printf("%d    \r\n",sensor.Gyro.Origin.x);
+//		MPU6050_GetData();
+//		printf("%d    \r\n",mpu6050.Gyro.Origin.x);
 		HAL_Delay(100);  
 //		delay_us(100000);
 		//delay_ms(100);

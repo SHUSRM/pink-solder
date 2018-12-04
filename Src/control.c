@@ -1,4 +1,5 @@
 #include "control.h"
+#include <math.h>
 /************TELE***************/
 uint8_t teledata_rx[18];
 TeleconData tele_data;
@@ -27,9 +28,13 @@ RxPID rxPID;
 MotorPara underpan[4];
 MotorPara cloudPitch;
 MotorPara cloudYaw;
-//PID_t *pidAdjust;
 
-void MOTO_ControlInit()
+//void CloudSystemIdentification(MotorPara *cloud, u16 time, u16 T)
+//{
+//	cloud->SetSpeed = sin(2*PI*time/T);
+//}
+
+void MOTO_PIDInit()
 {
 	cloudPitch.SetAngle = PITCH_MID;
 	cloudYaw.SetAngle = YAW_MID;
@@ -39,12 +44,12 @@ void MOTO_ControlInit()
 	{
 		PID_StructInit(&(underpan[i].SpeedPID), POSITION_PID, CURRENT_LIM, 1000,
 					   1.5,0.1,0); //0.035f, 0.0f);
-		PID_StructInit(&(underpan[i].CurrentPID), POSITION_PID, CURRENT_LIM, 1000,
-					   1.8f,0,0);// 0.02f, 0.0f);
+//		PID_StructInit(&(underpan[i].CurrentPID), POSITION_PID, CURRENT_LIM, 1000,
+//					   1.8f,0,0);// 0.02f, 0.0f);
 	}
 	
-	PID_StructInit(&(underpan[2].AnglePID), POSITION_PID, CURRENT_LIM, 1000,
-				   0,0,0); //0.035f, 0.0f);
+//	PID_StructInit(&(underpan[2].AnglePID), POSITION_PID, CURRENT_LIM, 1000,
+//				   0,0,0); //0.035f, 0.0f);
 	PID_StructInit(&(cloudPitch.AnglePID), POSITION_PID, 5000, 1000,
 				   -5.3,-0.1,0.46);//5, 0.01f, -1.3f);
 	PID_StructInit(&(cloudPitch.SpeedPID), POSITION_PID, 1000, 500,
@@ -80,10 +85,10 @@ void MOTO_UnderpanPID()
 {
 	u8 i;
 	/********将遥控器数据接收********/
-	underpan[0].SetSpeed = 500;//(int16_t)(1.0 * (tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
-	underpan[1].SetSpeed = 0;//(int16_t)(1.0 * (tele_data.ch3 - tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
-	//underpan[2].SetSpeed = 0;//(int16_t)(1.0 * (-tele_data.ch3 - tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
-	underpan[3].SetSpeed = 0;//(int16_t)(1.0 * (-tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
+	underpan[0].SetSpeed = (int16_t)(1.0 * (tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
+	underpan[1].SetSpeed = (int16_t)(1.0 * (tele_data.ch3 - tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
+	underpan[2].SetSpeed = (int16_t)(1.0 * (-tele_data.ch3 - tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
+	underpan[3].SetSpeed = (int16_t)(1.0 * (-tele_data.ch3 + tele_data.ch2 + tele_data.ch0) / 660 * SPEED_MAX);
 
 	for (i = 0; i < 1; i++)
 	{
@@ -112,9 +117,9 @@ void MOTO_CloudPitchPID()
 
 	cloudPitch.AnglePID.i = -0.02*(600-ABS(cloudPitch.Angle-7300))/600;
 	cloudPitch.CurrentOutput = PID_SpecialCalc(&(cloudPitch.AnglePID),
-											   cloudPitch.Angle, cloudPitch.SetAngle, sensor.Gyro.Origin.y);
+											   cloudPitch.Angle, cloudPitch.SetAngle, mpu6050.Gyro.Radian.y);
 //	cloudPitch.SetSpeed = PID_SpecialCalc(&(cloudPitch.AnglePID),
-//											   angleKal, cloudPitch.SetAngle, sensor.Gyro.Origin.y);
+//											   angleKal, cloudPitch.SetAngle, mpu6050.Gyro.Origin.y);
 //	cloudPitch.SetSpeed =1;
 //	cloudPitch.CurrentOutput = PID_Calc(&(cloudPitch.SpeedPID),
 //											   gyroKal, cloudPitch.SetSpeed);
@@ -130,8 +135,10 @@ void MOTO_CloudYawPID()
 		cloudYaw.SetAngle = YAW_MID + 800;
 	
 	//cloudYaw.AnglePID.i = -0.01*(800-ABS(cloudYaw.Angle-YAW_MID))/800;
-	cloudYaw.CurrentOutput = PID_SpecialCalc(&(cloudYaw.AnglePID),
-											 cloudYaw.Angle, cloudYaw.SetAngle, sensor.Gyro.Origin.x);
+	cloudYaw.SetSpeed = PID_SpecialCalc(&(cloudYaw.AnglePID),
+											 cloudYaw.Angle, cloudYaw.SetAngle, mpu6050.Gyro.Radian.x);
+	cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
+											   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
 }
 
 void IMU_Init()

@@ -4,8 +4,20 @@
 #include "tim.h"
 #include "can.h"
 #include "math.h"
+#include "string.h"
 
-u8 flag = 0;
+
+#define PERIOD  1000
+#define IDENTIFICATION 0
+u16 timeCount = 0;
+u8 	periodCount = 0;
+u8 	setSpeedData[PERIOD*20]; //143040
+u8 	realSpeedData[PERIOD*20];
+//u16 Period[64] = {1000,667,500,400,333,286,250,222,200,182,167,154,143,
+//				133,125,118,111,105,100,95,91,87,83,80,77,74,71,69,67,65,
+//				63,61,59,57,56,54,53,51,50,49,48,47,45,42,38,36,33,31,29,28,
+//				26,25,20,17,14,13,11,10,9,8,5,4,3,2};
+
 //定时器溢出中断
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -14,32 +26,51 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 	if (htim->Instance == TIM6)
 	{
-		flag = !flag;
-		if (flag)
+	#if IDENTIFICATION
+		
+		cloudYaw.SetSpeed = sin(2*PI*timeCount/PERIOD);
+		setSpeedData[timeCount + periodCount * PERIOD] = cloudYaw.SetSpeed;
+		MPU6050_GetData();
+		realSpeedData[timeCount + periodCount * PERIOD] = mpu6050.Gyro.Radian.x;
+		cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
+											   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
+		
+		if(timeCount < PERIOD)
+			timeCount ++;
+		else
 		{
-			get_mpu_data();
-			//卡尔曼滤波
-			KalmanFilter(atan2(sensor.Acc.Origin.x,sensor.Acc.Origin.z)*180/PI,-sensor.Gyro.Origin.y/16.4);						
+			timeCount = 0;
+			periodCount++;
 		}
-		get_mpu_data();
-		//卡尔曼滤波
-		KalmanFilter(atan2(sensor.Acc.Origin.x,sensor.Acc.Origin.z)*180/PI,-sensor.Gyro.Origin.y/16.4);				
-//		MOTO_UnderpanPID();
-//		CAN_SetUnderpanMotorCurrent(underpan[0].CurrentOutput, underpan[1].CurrentOutput,
-//									underpan[2].CurrentOutput, underpan[3].CurrentOutput);
+		if(periodCount == 20)
+			periodCount = 0;
+	#else
 //		MOTO_CloudPitchPID();
 //		MOTO_CloudYawPID();
-//		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
+//		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
+			
+		if(timeCount % 5 == 0)
+		{
+//			MPU6050_GetData();
+//			KalmanFilter(atan2(mpu6050.Acc.Origin.x,mpu6050.Acc.Origin.z)*180/PI,-mpu6050.Gyro.Origin.y/16.4,&mpu6050.PitchK);		
+			
+			MPU6500_GetData();	
+		}
+		if(timeCount % 10 == 0)
+		{
+//			MOTO_UnderpanPID();
+//			CAN_SetUnderpanMotorCurrent(underpan[0].CurrentOutput, underpan[1].CurrentOutput,
+//										underpan[2].CurrentOutput, underpan[3].CurrentOutput);
+		}	
+		
+		if(timeCount < 1000)
+			timeCount ++;
+		else
+			timeCount = 0;
+	#endif	
 	}
 }
-//void HAL_CAN_RxFifo0FullCallback(CAN_HandleTypeDef *hcan)
-//{
-//	if (hcan->Instance == CAN1)
-//	{
-//		HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &Rx1Message, canRxDataBuf);
-//		CAN_GetMotoData(&Rx1Message, canRxDataBuf);
-//	}
-//}
+
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	if (hcan->Instance == CAN1)
@@ -124,63 +155,64 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			break;
 		}
 	}
+	/************串口陀螺仪数据处理************/
 	else if(huart->Instance == USART3)
 	{
 	#if 0
-		if ((sensor.RxCount & 0x8000) == 0) //接收未完成
+		if ((mpu6050.RxCount & 0x8000) == 0) //接收未完成
 		{
-			sensor.RxBuf[sensor.RxCount & 0X3FFF] = sensor.mpuReadBuf;
+			mpu6050.RxBuf[mpu6050.RxCount & 0X3FFF] = mpu6050.mpuReadBuf;
 
-			if ((sensor.RxCount & 0X3FFF) == 0 && sensor.RxBuf[0] != 0x55)
+			if ((mpu6050.RxCount & 0X3FFF) == 0 && mpu6050.RxBuf[0] != 0x55)
 				return; //第 0 号数据不是帧头，跳过
-			if ((sensor.RxCount & 0X3FFF) == 1 && sensor.RxBuf[1] != 0x52)
+			if ((mpu6050.RxCount & 0X3FFF) == 1 && mpu6050.RxBuf[1] != 0x52)
 			{
-				sensor.RxCount = 0;
+				mpu6050.RxCount = 0;
 				return; //第 2 号数据不是角度，跳过
 			}
 			
-			sensor.RxCount++;
+			mpu6050.RxCount++;
 
-			if ((sensor.RxCount & 0X3FFF) == 11)
+			if ((mpu6050.RxCount & 0X3FFF) == 11)
 			{
 				for (int i = 0; i < 10; i++)
-					sensor.RxSum += sensor.RxBuf[i];
+					mpu6050.RxSum += mpu6050.RxBuf[i];
 
-				if (sensor.RxSum == sensor.RxBuf[10])
+				if (mpu6050.RxSum == mpu6050.RxBuf[10])
 				{
-					sensor.RxCount |= 0x8000;
+					mpu6050.RxCount |= 0x8000;
 					
-					sensor.Auto.GyroX = ((short)(sensor.RxBuf[3] << 8 | sensor.RxBuf[2])) / 32768.0 * 2000;
-					sensor.Auto.GyroY = ((short)((sensor.RxBuf[5] << 8) | sensor.RxBuf[4])) / 32768.0 * 2000;
-					sensor.Auto.GyroZ = ((short)((sensor.RxBuf[7] << 8) | sensor.RxBuf[6])) / 32768.0 * 2000;
-					sensor.RxCount = 0;
-					sensor.RxSum = 0;
+					mpu6050.Auto.GyroX = ((short)(mpu6050.RxBuf[3] << 8 | mpu6050.RxBuf[2])) / 32768.0 * 2000;
+					mpu6050.Auto.GyroY = ((short)((mpu6050.RxBuf[5] << 8) | mpu6050.RxBuf[4])) / 32768.0 * 2000;
+					mpu6050.Auto.GyroZ = ((short)((mpu6050.RxBuf[7] << 8) | mpu6050.RxBuf[6])) / 32768.0 * 2000;
+					mpu6050.RxCount = 0;
+					mpu6050.RxSum = 0;
 				}
 				
 				else
 				{
-					sensor.RxCount = 0;
-					sensor.RxSum = 0;
+					mpu6050.RxCount = 0;
+					mpu6050.RxSum = 0;
 				}
 			}
 		}
 	#endif
-		if(sensor.RxBuf[11] == 0x55 && sensor.RxBuf[12] == 0x52)
+		if(mpu6050.RxBuf[11] == 0x55 && mpu6050.RxBuf[12] == 0x52)
 		{
 			for (int i = 0; i < 10; i++)
-					sensor.RxSum += sensor.RxBuf[i+11];
-			if (sensor.RxSum == sensor.RxBuf[21])
+					mpu6050.RxSum += mpu6050.RxBuf[i+11];
+			if (mpu6050.RxSum == mpu6050.RxBuf[21])
 			{
-				sensor.Auto.GyroX = ((short)(sensor.RxBuf[14] << 8 | sensor.RxBuf[13])) / 32768.0 * 2000;
-				sensor.Auto.GyroY = ((short)((sensor.RxBuf[16] << 8) | sensor.RxBuf[15])) / 32768.0 * 2000;
-				sensor.Auto.GyroZ = ((short)((sensor.RxBuf[18] << 8) | sensor.RxBuf[17])) / 32768.0 * 2000;
-				sensor.RxSum = 0;
+				mpu6050.Auto.GyroX = ((short)(mpu6050.RxBuf[14] << 8 | mpu6050.RxBuf[13])) / 32768.0 * 2000;
+				mpu6050.Auto.GyroY = ((short)((mpu6050.RxBuf[16] << 8) | mpu6050.RxBuf[15])) / 32768.0 * 2000;
+				mpu6050.Auto.GyroZ = ((short)((mpu6050.RxBuf[18] << 8) | mpu6050.RxBuf[17])) / 32768.0 * 2000;
+				mpu6050.RxSum = 0;
 			}	
 		}
 		else
 		{
 			IMU_Init();
-			HAL_UART_Receive_DMA(&huart3,sensor.RxBuf,sizeof(sensor.RxBuf));
+			HAL_UART_Receive_DMA(&huart3,mpu6050.RxBuf,sizeof(mpu6050.RxBuf));
 		}
 	}
 	/*************PID参数串口数据处理***********/

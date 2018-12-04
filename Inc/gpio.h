@@ -59,6 +59,8 @@
 #define GREEN_LED PFout(14)
 #define RED_LED PEout(7)
 
+#define MPU6500_NSS PFout(6)
+
 /* USER CODE END Private defines */
 
 void MX_GPIO_Init(void);

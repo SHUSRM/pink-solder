@@ -5,6 +5,7 @@
 #include "sys.h"
 #include "pid.h"
 #include "mpu6050.h"
+#include "mpu6500.h"
 #include "beep.h"
 #include "Kalman.h"
 #include "usart.h"
@@ -15,14 +16,7 @@
 #define SPEED_MAX 5000
 #define PITCH_MID  7300					//云台pitch轴初值
 #define YAW_MID 930						//云台yaw轴初值
-#define PI 3.1415926f
- 
 
-enum{
-    SPEED = 0,
-    CURRENT 	,
-    POSITION 	,
-};
 
 /*****teler*******/
 typedef struct 
@@ -138,7 +132,7 @@ extern Camera camera;
 extern Judge judge;
 
 void TelecontrollerData(void);
-void MOTO_ControlInit(void);
+void MOTO_PIDInit(void);
 void MOTO_UnderpanPID(void);
 void MOTO_CloudPitchPID(void);
 void MOTO_CloudYawPID(void);

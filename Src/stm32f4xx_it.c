@@ -291,7 +291,7 @@ void USART3_IRQHandler(void)
 			break;
 	}
 	timeout = 0;
-	while (HAL_UART_Receive_IT(&huart3, &sensor.mpuReadBuf, 1) != HAL_OK) //一次处理完成之后，重新开启中断并设置RxXferCount为1
+	while (HAL_UART_Receive_IT(&huart3, &mpu6050.mpuReadBuf, 1) != HAL_OK) //一次处理完成之后，重新开启中断并设置RxXferCount为1
 	{
 		timeout++; //超时处理
 		if (timeout > HAL_MAX_DELAY)
@@ -303,7 +303,7 @@ void USART3_IRQHandler(void)
 		__HAL_UART_CLEAR_IDLEFLAG(&huart3);
 		timeout = __HAL_DMA_GET_COUNTER(huart3.hdmarx);
 		timeout = huart3.hdmarx->Instance->NDTR;
-		HAL_UART_Receive_DMA(&huart3,sensor.RxBuf,sizeof(sensor.RxBuf));
+		HAL_UART_Receive_DMA(&huart3,mpu6050.RxBuf,sizeof(mpu6050.RxBuf));
 	}
 
 #endif

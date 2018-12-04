@@ -11,35 +11,35 @@
 
 #define Gyro_Gr 0.0005326 //  1/32768/1000/57.3
 
-struct _sensor sensor;
+struct _sensor mpu6050;
 
 /**************************实现函数********************************************
 //陀螺仪零点校准
 *******************************************************************************/
 
-void Gyro_OFFEST(void)
+void MPU6050_GyroOffest(void)
 {
 	int cnt_g = 20;
 	int32_t tempgx = 0, tempgy = 0, tempgz = 0;
 	while (cnt_g--) //循环采集2000次   求平均
 	{
-		MPU_Get_Gyroscope(&sensor.Gyro.Origin.x, &sensor.Gyro.Origin.y, &sensor.Gyro.Origin.z);
-		tempgx += sensor.Gyro.Origin.x;
-		tempgy += sensor.Gyro.Origin.y;
-		tempgz += sensor.Gyro.Origin.z;
+		MPU_Get_Gyroscope(&mpu6050.Gyro.Origin.x, &mpu6050.Gyro.Origin.y, &mpu6050.Gyro.Origin.z);
+		tempgx += mpu6050.Gyro.Origin.x;
+		tempgy += mpu6050.Gyro.Origin.y;
+		tempgz += mpu6050.Gyro.Origin.z;
 		delay_ms(100);
 	}
-	sensor.Gyro.Quiet.x = tempgx / 20;
-	sensor.Gyro.Quiet.y = tempgy / 20;
-	sensor.Gyro.Quiet.z = tempgz / 20;
+	mpu6050.Gyro.Quiet.x = tempgx / 20;
+	mpu6050.Gyro.Quiet.y = tempgy / 20;
+	mpu6050.Gyro.Quiet.z = tempgz / 20;
 }
-void get_mpu_data(void)
+void MPU6050_GetData(void)
 {
-	MPU_Get_Gyroscope(&sensor.Gyro.Origin.x, &sensor.Gyro.Origin.y, &sensor.Gyro.Origin.z);
-	MPU_Get_Accelerometer(&sensor.Acc.Origin.x, &sensor.Acc.Origin.y, &sensor.Acc.Origin.z);
-	sensor.Gyro.Radian.x = ((sensor.Gyro.Origin.x - sensor.Gyro.Quiet.x) * 1000 >> 15); //得到弧度
-	sensor.Gyro.Radian.y = ((sensor.Gyro.Origin.y - sensor.Gyro.Quiet.y) * 1000 >> 15);
-	sensor.Gyro.Radian.z = (sensor.Gyro.Origin.z - sensor.Gyro.Quiet.z);// * 1000 >> 14);
+	MPU_Get_Gyroscope(&mpu6050.Gyro.Origin.x, &mpu6050.Gyro.Origin.y, &mpu6050.Gyro.Origin.z);
+	MPU_Get_Accelerometer(&mpu6050.Acc.Origin.x, &mpu6050.Acc.Origin.y, &mpu6050.Acc.Origin.z);
+	mpu6050.Gyro.Radian.x = ((mpu6050.Gyro.Origin.x - mpu6050.Gyro.Quiet.x) / 16.4f);//* 1000 >> 14); //得到弧度
+	mpu6050.Gyro.Radian.y = ((mpu6050.Gyro.Origin.y - mpu6050.Gyro.Quiet.y) / 16.4f);//* 1000 >> 14);
+	mpu6050.Gyro.Radian.z = ((mpu6050.Gyro.Origin.z - mpu6050.Gyro.Quiet.z) / 16.4f);//* 1000 >> 14);
 }
 
 //得到陀螺仪值(原始值)

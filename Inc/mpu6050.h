@@ -1,6 +1,7 @@
 #ifndef __MPU6050_H
 #define __MPU6050_H
 #include "myiic.h"
+#include "Kalman.h"
 
 //#define MPU_ACCEL_OFFS_REG		0X06	//accel_offs寄存器,可读取版本号,寄存器手册未提到
 //#define MPU_PROD_ID_REG			0X0C	//prod id寄存器,在寄存器手册未提到
@@ -118,21 +119,23 @@ struct _sensor
 {
 	struct _trans Acc;
 	struct _trans Gyro;	
+	
 	Auto	Auto;
-	uint16_t RxCount;
-	uint8_t RxBuf[33];
+	Kalman 	PitchK;
+	u16 	RxCount;
+	u8 		RxBuf[33];
 	u8		mpuReadBuf;
 	u8		RxSum;
 };
 
-extern struct _sensor sensor;
+extern struct _sensor mpu6050;
 
 ////因为开发板接GND,所以转为读写地址后,为0XD1和0XD0(如果接GND,则为0XD3和0XD2)
 //#define MPU_READ    0XD1
 //#define MPU_WRITE   0XD0
 
-void Gyro_OFFEST(void); //
-void get_mpu_data(void);
+void MPU6050_GyroOffest(void); //
+void MPU6050_GetData(void);
 
 uint8_t MPU6050_Init(void);													 //初始化MPU6050
 uint8_t MPU_Write_Len(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *buf); //IIC连续写
