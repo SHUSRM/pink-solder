@@ -40,6 +40,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 											   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
 		MOTO_CloudPitchPID();
 		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
+		
 		if(timeCount < Period[periodIndex])
 			timeCount ++;
 		else
@@ -51,6 +52,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		{
 			periodCount = 0;	
 			periodIndex ++;
+		}
+		if(periodIndex == 64)
+		{
+			cloudYaw.SetSpeed = 0;
+			while(1);
 		}
 		#else
 		cloudYaw.SetSpeed = sin(2*PI*timeCount/PERIOD);
