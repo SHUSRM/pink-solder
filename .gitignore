@@ -9,8 +9,6 @@
 *.d
 *.lst
 *.StrangeChen
-*.uvoptx
-*.uvprojx
 *.json
 *.iex
 *.axf
