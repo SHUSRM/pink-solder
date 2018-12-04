@@ -110,8 +110,7 @@ void MOTO_CloudPitchPID()
 		cloudPitch.SetAngle = PITCH_MID + 600;
 	
 //	cloudPitch.SetAngle = 90;
-
-	//cloudPitch.SetAngle = 7300;
+//	cloudPitch.SetAngle = 7300;
 //	cloudPitch.CurrentOutput = PID_Calc(&(cloudPitch.AnglePID),
 //											   cloudPitch.Angle, cloudPitch.SetAngle);
 
@@ -135,8 +134,8 @@ void MOTO_CloudYawPID()
 		cloudYaw.SetAngle = YAW_MID + 800;
 	
 	//cloudYaw.AnglePID.i = -0.01*(800-ABS(cloudYaw.Angle-YAW_MID))/800;
-	cloudYaw.SetSpeed = PID_SpecialCalc(&(cloudYaw.AnglePID),
-											 cloudYaw.Angle, cloudYaw.SetAngle, mpu6050.Gyro.Radian.x);
+//	cloudYaw.SetSpeed = PID_SpecialCalc(&(cloudYaw.AnglePID),
+//											 cloudYaw.Angle, cloudYaw.SetAngle, mpu6050.Gyro.Radian.x);
 	cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
 											   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
 }

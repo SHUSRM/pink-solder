@@ -31,6 +31,7 @@ typedef struct
 
 
 extern float angleKal, gyroKal; 	
+void KalmanInit(Kalman *kal);
 void KalmanFilter(float accelAngle,float Gyro, Kalman *kal);		
 
 #endif

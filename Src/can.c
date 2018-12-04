@@ -258,11 +258,8 @@ void CAN_GetMotoData(CAN_RxHeaderTypeDef *pHeader, uint8_t aData[])
 		cloudPitch.Speed = aData[2] << 8 | aData[3];
 		cloudPitch.Current = aData[4] << 8 | aData[5];
 
-//		if (cloud_para[0].Angle < 4096)
-//			cloud_para[0].B_Angle = cloud_para[0].Angle;
-
-//		if (cloud_para[0].Angle > 4096)
-//			cloud_para[0].B_Angle = cloud_para[0].Angle - 8192;
+		if (cloudPitch.Angle > 4096)
+			cloudPitch.Angle = cloudPitch.Angle - 8192;
 
 		break;
 	//yaw
@@ -271,12 +268,9 @@ void CAN_GetMotoData(CAN_RxHeaderTypeDef *pHeader, uint8_t aData[])
 		cloudYaw.Speed = aData[2] << 8 | aData[3];
 		cloudYaw.Current = aData[4] << 8 | aData[5];
 
-//		if (cloud_para[1].Angle < 4096)
-//			cloud_para[1].B_Angle = cloud_para[1].Angle;
-
-//		if (cloud_para[1].Angle > 4096)
-//			cloud_para[1].B_Angle = cloud_para[1].Angle - 8192;
-//		break;
+		if (cloudYaw.Angle > 4096)
+			cloudYaw.Angle = cloudYaw.Angle - 8192;
+		break;
 
 	case 0x207:
 		dan_para[0].Angle = aData[0] << 8 | aData[1];
