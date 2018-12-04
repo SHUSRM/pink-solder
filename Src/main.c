@@ -161,11 +161,11 @@ int main(void)
 //		output[0] = mpu6050.Auto.GyroX;
 //		output[1] = mpu6050.Auto.GyroY;//4000 * sinf(a+1);	
 //		output[2] = mpu6050.Auto.GyroZ;
-		output[0] = mpu6500.PitchK.Angle;
-		output[1] = mpu6500.RollK.Angle;//4000 * sinf(a+1);	
-		output[2] = atan2(mpu6500.AccX,mpu6500.AccZ)*180/PI;
-		output[3] = mpu6500.GyroY;
-		output[4] = mpu6500.GyroZ;
+//		output[0] = mpu6500.PitchK.Angle;
+//		output[1] = mpu6500.RollK.Angle;//4000 * sinf(a+1);	
+//		output[2] = atan2(mpu6500.AccX,mpu6500.AccZ)*180/PI;
+//		output[3] = mpu6500.GyroY;
+//		output[4] = mpu6500.GyroZ;
 //		output[2] = cloudPitch.Speed;
 //		output[2] = cloudPitch.AnglePID.dout;
 //		output[4] = cloudYaw.Angle;
