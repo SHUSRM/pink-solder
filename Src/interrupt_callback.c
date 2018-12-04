@@ -8,7 +8,7 @@
 
 
 #define PERIOD  1000
-#define IDENTIFICATION 1
+#define IDENTIFICATION 0
 #define JSCOPE		   1
 u16 timeCount = 0;
 u8 	periodCount = 0;
@@ -30,33 +30,37 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 	#if IDENTIFICATION
 		#if JSCOPE
-		cloudYaw.SetSpeed = sin(2*PI* timeCount / Period[periodIndex]);
-		
-		//setSpeedData[timeCount + periodCount * Period[periodIndex]] = cloudYaw.SetSpeed;
-		
-		MPU6050_GetData();
-		//realSpeedData[timeCount + periodCount * Period[periodIndex]] = mpu6050.Gyro.Radian.x;
-		cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
-											   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
-		MOTO_CloudPitchPID();
-		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
-		
-		if(timeCount < Period[periodIndex])
-			timeCount ++;
+		if(periodIndex < 64)
+		{
+			cloudYaw.SetSpeed = sin(2*PI* timeCount / Period[periodIndex]);	
+			MPU6050_GetData();
+			cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
+												   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
+			
+			MOTO_CloudPitchPID();
+			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
+			
+			if(timeCount < Period[periodIndex])
+				timeCount ++;
+			else
+			{
+				timeCount = 0;
+				periodCount++;
+			}
+			if(periodCount == 20)
+			{
+				periodCount = 0;	
+				periodIndex ++;
+			}
+		}
 		else
 		{
-			timeCount = 0;
-			periodCount++;
-		}
-		if(periodCount == 20)
-		{
-			periodCount = 0;	
-			periodIndex ++;
-		}
-		if(periodIndex == 64)
-		{
-			cloudYaw.SetSpeed = 0;
-			while(1);
+			cloudYaw.SetSpeed = 0;	
+			MPU6050_GetData();
+			cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
+												   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
+			MOTO_CloudPitchPID();
+			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
 		}
 		#else
 		cloudYaw.SetSpeed = sin(2*PI*timeCount/PERIOD);
@@ -78,7 +82,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		#endif
 	#else
 		MOTO_CloudPitchPID();
-		MOTO_CloudYawPID();
+//		MOTO_CloudYawPID();
 		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
 			
 		if(timeCount % 5 == 0)
