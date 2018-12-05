@@ -37,9 +37,12 @@ void MPU6050_GetData(void)
 {
 	MPU_Get_Gyroscope(&mpu6050.Gyro.Origin.x, &mpu6050.Gyro.Origin.y, &mpu6050.Gyro.Origin.z);
 	MPU_Get_Accelerometer(&mpu6050.Acc.Origin.x, &mpu6050.Acc.Origin.y, &mpu6050.Acc.Origin.z);
-	mpu6050.Gyro.Radian.x = ((mpu6050.Gyro.Origin.x - mpu6050.Gyro.Quiet.x) / 16.4f);//* 1000 >> 14); //得到弧度
-	mpu6050.Gyro.Radian.y = ((mpu6050.Gyro.Origin.y - mpu6050.Gyro.Quiet.y) / 16.4f);//* 1000 >> 14);
-	mpu6050.Gyro.Radian.z = ((mpu6050.Gyro.Origin.z - mpu6050.Gyro.Quiet.z) / 16.4f);//* 1000 >> 14);
+	mpu6050.Gyro.Origin.x = (mpu6050.Gyro.Origin.x - mpu6050.Gyro.Quiet.x);
+	mpu6050.Gyro.Origin.y = (mpu6050.Gyro.Origin.y - mpu6050.Gyro.Quiet.y);
+	mpu6050.Gyro.Origin.z = (mpu6050.Gyro.Origin.z - mpu6050.Gyro.Quiet.z);
+	mpu6050.Gyro.Radian.x = ((mpu6050.Gyro.Origin.x ) / 16.4f);//* 1000 >> 14); //得到弧度
+	mpu6050.Gyro.Radian.y = ((mpu6050.Gyro.Origin.y ) / 16.4f);//* 1000 >> 14);
+	mpu6050.Gyro.Radian.z = ((mpu6050.Gyro.Origin.z ) / 16.4f);//* 1000 >> 14);
 }
 
 //得到陀螺仪值(原始值)
@@ -85,17 +88,17 @@ uint8_t MPU6050_Init(void)
 	MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X00); //唤醒MPU6050
 	MPU_Set_Gyro_Fsr(3);					 //陀螺仪传感器,±2000dps
 	MPU_Set_Accel_Fsr(0);					 //加速度传感器,±2g
-	MPU_Set_Rate(50);						 //设置采样率50Hz
+	MPU_Set_Rate(1000);						 //设置采样率50Hz
 	MPU_Write_Byte(MPU_INT_EN_REG, 0X00);	//关闭所有中断
 	MPU_Write_Byte(MPU_USER_CTRL_REG, 0X00); //I2C主模式关闭
-	MPU_Write_Byte(MPU_FIFO_EN_REG, 0X00);   //关闭FIFO
+	MPU_Write_Byte(MPU_FIFO_EN_REG, 0X70);   //关闭FIFO
 	MPU_Write_Byte(MPU_INTBP_CFG_REG, 0X80); //INT引脚低电平有效
 	res = MPU_Read_Byte(MPU_DEVICE_ID_REG);
 	if (res == MPU_ADDR) //器件ID正确
 	{
 		MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X01); //设置CLKSEL,PLL X轴为参考
 		MPU_Write_Byte(MPU_PWR_MGMT2_REG, 0X00); //加速度与陀螺仪都工作
-		MPU_Set_Rate(50);						 //设置采样率为50Hz
+		MPU_Set_Rate(1000);						 //设置采样率为50Hz
 	}
 	else
 		return 1;
@@ -124,7 +127,9 @@ uint8_t MPU_Set_Accel_Fsr(uint8_t fsr)
 uint8_t MPU_Set_LPF(uint16_t lpf)
 {
 	uint8_t data = 0;
-	if (lpf >= 188)
+	if (lpf >= 255)
+		data = 0;
+	else if (lpf >= 188)
 		data = 1;
 	else if (lpf >= 98)
 		data = 2;

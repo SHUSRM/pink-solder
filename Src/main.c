@@ -122,7 +122,8 @@ int main(void)
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 	MPU6050_Init();																//陀螺仪初始化
-	MPU6050_GyroOffest();																//陀螺仪校准
+	MPU6050_GyroOffest();														//陀螺仪校准
+	delay_ms(10);
 	MPU6500_Init();
 	IMU_Init();
 	HAL_UART_Receive_DMA(&huart3,mpu6050.RxBuf,sizeof(mpu6050.RxBuf));			//MPU初始化完成后立刻开启DMA接收防止接收不完整数据
@@ -138,7 +139,7 @@ int main(void)
 	
 	
 	//选择上位机PID调参对象
-	rxPID.pidAdjust = &(cloudYaw.AnglePID);
+	rxPID.pidAdjust = &(cloudYaw.SpeedPID);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -165,10 +166,10 @@ int main(void)
 //		output[1] = mpu6500.RollK.Angle;//4000 * sinf(a+1);	
 //		output[2] = atan2(mpu6500.AccX,mpu6500.AccZ)*180/PI;
 //		output[3] = mpu6500.GyroY;
-//		output[4] = mpu6500.GyroZ;
-//		output[2] = cloudPitch.Speed;
-//		output[2] = cloudPitch.AnglePID.dout;
-//		output[4] = cloudYaw.Angle;
+		output[1] = cloudYaw.CurrentOutput;
+		output[2] = cloudYaw.Angle;
+		output[0] = mpu6050.Gyro.Origin.x;
+		output[3] = cloudYaw.SetSpeed;
 //		output[5] = cloudPitch.AnglePID.i*100;
 		UART_SendDataToPC(output, sizeof(output));
 //		MPU6050_GetData();
@@ -253,9 +254,6 @@ void SystemClock_Config(void)
   */
 static void MX_NVIC_Init(void)
 {
-  /* TIM6_DAC_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 2, 0);
-  HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
   /* USART6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(USART6_IRQn, 4, 0);
   HAL_NVIC_EnableIRQ(USART6_IRQn);

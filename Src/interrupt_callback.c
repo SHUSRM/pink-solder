@@ -8,11 +8,11 @@
 
 
 #define PERIOD  1000
-#define IDENTIFICATION 0
+#define IDENTIFICATION 1
 #define JSCOPE		   1
 u16 timeCount = 0;
 u8 	periodCount = 0;
-u8	periodIndex = 0;
+int	periodIndex = 0;
 u8 	setSpeedData[PERIOD*20]; //143040
 u8 	realSpeedData[PERIOD*20];
 u16 Period[64] = {1000,667,500,400,333,286,250,222,200,182,167,154,143,
@@ -30,12 +30,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 	#if IDENTIFICATION
 		#if JSCOPE
-		if(periodIndex < 64)
+			
+		if(periodIndex < 64 && periodIndex >=0)
 		{
-			cloudYaw.SetSpeed = sin(2*PI* timeCount / Period[periodIndex]);	
+			cloudYaw.SetSpeed = 700*sin(2*PI* timeCount / Period[periodIndex]);	
 			MPU6050_GetData();
 			cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
-												   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
+												   mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
 			
 			MOTO_CloudPitchPID();
 			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
@@ -55,15 +56,31 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 		else
 		{
-			cloudYaw.SetSpeed = 0;	
+			cloudYaw.SetSpeed = 0;//700*sin(2*PI*timeCount/PERIOD);	
 			MPU6050_GetData();
 			cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
-												   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
+												   mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
 			MOTO_CloudPitchPID();
 			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
+			if(timeCount < PERIOD)
+				timeCount ++;
+			else
+			{
+				timeCount = 0;
+				periodCount++;
+			}
+			if(periodCount == 20)
+			{
+				periodCount = 0;	
+				periodIndex ++;
+			}
+			if(periodIndex >1000)
+			{
+				periodIndex = 70;
+			}
 		}
 		#else
-		cloudYaw.SetSpeed = sin(2*PI*timeCount/PERIOD);
+		cloudYaw.SetSpeed = 500*sin(2*PI*timeCount/PERIOD);
 		setSpeedData[timeCount + periodCount * PERIOD] = cloudYaw.SetSpeed;
 		MPU6050_GetData();
 		realSpeedData[timeCount + periodCount * PERIOD] = mpu6050.Gyro.Radian.x;
@@ -81,6 +98,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			periodCount = 0;
 		#endif
 	#else
+		MPU6050_GetData();
 		MOTO_CloudPitchPID();
 //		MOTO_CloudYawPID();
 		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
@@ -90,7 +108,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //			MPU6050_GetData();
 //			KalmanFilter(atan2(mpu6050.Acc.Origin.x,mpu6050.Acc.Origin.z)*180/PI,-mpu6050.Gyro.Origin.y/16.4,&mpu6050.PitchK);		
 			
-			MPU6500_GetData();	
+//			MPU6500_GetData();	
 		}
 		if(timeCount % 10 == 0)
 		{

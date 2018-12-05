@@ -51,13 +51,13 @@ void MOTO_PIDInit()
 //	PID_StructInit(&(underpan[2].AnglePID), POSITION_PID, CURRENT_LIM, 1000,
 //				   0,0,0); //0.035f, 0.0f);
 	PID_StructInit(&(cloudPitch.AnglePID), POSITION_PID, 5000, 1000,
-				   0,0,0);//-5.3,-0.1,0.46);//5, 0.01f, -1.3f);
+				   -5.6,-0.002,0.5);//5, 0.01f, -1.3f);
 	PID_StructInit(&(cloudPitch.SpeedPID), POSITION_PID, 1000, 500,
 				   -20.4,0,0);//5.2,0.08,0);// 5, 0.01f, -1.3f);
 	PID_StructInit(&(cloudYaw.AnglePID), POSITION_PID, 5000, 1000,
 				   -0,0,0);//5, -0.01f, -2.7f);
 	PID_StructInit(&(cloudYaw.SpeedPID), POSITION_PID, 1000, 500,
-				   0,0,0);
+				   -6.4,0,10);//-1.2,-0.04,-42);
 }
 
 /*****接收遥控器数据*****/
@@ -104,7 +104,7 @@ void MOTO_UnderpanPID()
 }
 /**************云台pitch方向pid控制***************/
 void MOTO_CloudPitchPID()
-{
+{  short a;
 	cloudPitch.SetAngle = PITCH_MID + 1.0 * tele_data.ch1;
 	if (cloudPitch.SetAngle < (PITCH_MID - 600))
 		cloudPitch.SetAngle = PITCH_MID - 600;
@@ -115,10 +115,10 @@ void MOTO_CloudPitchPID()
 //	cloudPitch.SetAngle = 7300;
 //	cloudPitch.CurrentOutput = PID_Calc(&(cloudPitch.AnglePID),
 //											   cloudPitch.Angle, cloudPitch.SetAngle);
-
-//	cloudPitch.AnglePID.i = -0.02*(600-ABS(cloudPitch.Angle-7300))/600;
+	//a = ABS(cloudPitch.Angle+800);
+	//cloudPitch.AnglePID.i = -0.006*(600-ABS((cloudPitch.Angle+800)))/600;
 	cloudPitch.CurrentOutput = PID_SpecialCalc(&(cloudPitch.AnglePID),
-											   cloudPitch.Angle, cloudPitch.SetAngle, mpu6050.Gyro.Radian.y);
+											   cloudPitch.Angle, cloudPitch.SetAngle, mpu6050.Gyro.Origin.y);
 //	cloudPitch.SetSpeed = PID_SpecialCalc(&(cloudPitch.AnglePID),
 //											   angleKal, cloudPitch.SetAngle, mpu6050.Gyro.Origin.y);
 //	cloudPitch.SetSpeed =1;

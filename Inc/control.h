@@ -14,7 +14,7 @@
 #define CURRENT_LIM 4000				//电流最小值
 #define CURRENT_MAX 16000				//电流最大值
 #define SPEED_MAX 5000
-#define PITCH_MID  7300					//云台pitch轴初值
+#define PITCH_MID  -800					//云台pitch轴初值
 #define YAW_MID 930						//云台yaw轴初值
 
 
@@ -41,7 +41,7 @@ typedef struct
 
 typedef struct _moto
 {
-	uint16_t Angle;		//转子机械角度
+	int16_t Angle;		//转子机械角度
 	int16_t Speed;			//转子转速
 	int16_t Current;			//转矩电流
 	uint16_t Temperature;		//电机温度
