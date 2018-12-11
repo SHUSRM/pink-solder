@@ -55,9 +55,9 @@ void MOTO_PIDInit()
 	PID_StructInit(&(cloudPitch.SpeedPID), POSITION_PID, 1000, 500,
 				   -20.4,0,0);//5.2,0.08,0);// 5, 0.01f, -1.3f);
 	PID_StructInit(&(cloudYaw.AnglePID), POSITION_PID, 5000, 1000,
-				   -0,0,0);//5, -0.01f, -2.7f);
-	PID_StructInit(&(cloudYaw.SpeedPID), POSITION_PID, 1000, 500,
-				   -6.4,0,10);//-1.2,-0.04,-42);
+				   6,0,0);//5, -0.01f, -2.7f);
+	PID_StructInit(&(cloudYaw.SpeedPID), POSITION_PID, 4000, 500,
+				   -4.0,-0.006,0);//-1.2,-0.04,-42);
 }
 
 /*****接收遥控器数据*****/
@@ -136,10 +136,10 @@ void MOTO_CloudYawPID()
 		cloudYaw.SetAngle = YAW_MID + 800;
 	
 	//cloudYaw.AnglePID.i = -0.01*(800-ABS(cloudYaw.Angle-YAW_MID))/800;
-//	cloudYaw.SetSpeed = PID_SpecialCalc(&(cloudYaw.AnglePID),
-//											 cloudYaw.Angle, cloudYaw.SetAngle, mpu6050.Gyro.Radian.x);
+	cloudYaw.SetSpeed = PID_SpecialCalc(&(cloudYaw.AnglePID),
+											 cloudYaw.Angle, cloudYaw.SetAngle, mpu6050.Gyro.Radian.x);
 	cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
-											   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
+											   mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
 }
 
 void IMU_Init()

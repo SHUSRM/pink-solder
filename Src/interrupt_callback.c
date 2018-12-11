@@ -8,11 +8,11 @@
 
 
 #define PERIOD  1000
-#define IDENTIFICATION 1
-#define JSCOPE		   1
+#define IDENTIFICATION 0
+#define SINE		   0
 u16 timeCount = 0;
 u8 	periodCount = 0;
-int	periodIndex = 0;
+int	periodIndex = -1;
 u8 	setSpeedData[PERIOD*20]; //143040
 u8 	realSpeedData[PERIOD*20];
 u16 Period[64] = {1000,667,500,400,333,286,250,222,200,182,167,154,143,
@@ -29,8 +29,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM6)
 	{
 	#if IDENTIFICATION
-		#if JSCOPE
-			
+		#if SINE		
 		if(periodIndex < 64 && periodIndex >=0)
 		{
 			cloudYaw.SetSpeed = 700*sin(2*PI* timeCount / Period[periodIndex]);	
@@ -80,27 +79,60 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			}
 		}
 		#else
-		cloudYaw.SetSpeed = 500*sin(2*PI*timeCount/PERIOD);
-		setSpeedData[timeCount + periodCount * PERIOD] = cloudYaw.SetSpeed;
+//		switch(periodCount)
+//		{
+//		case 0:
+//			cloudYaw.SetSpeed = 0;
+//			break;
+//		case 1:
+//			cloudYaw.SetSpeed = 700;
+//			break;
+//		case 2:
+//			cloudYaw.SetSpeed = 0;
+//			break;
+//		case 3:
+//			cloudYaw.SetSpeed = -700;
+//			break;
+//		}
+		switch(periodCount)
+		{
+		case 0:
+			cloudYaw.SetAngle = 1000;
+			break;
+		case 1:
+			cloudYaw.SetAngle = 1700;
+			break;
+		case 2:
+			cloudYaw.SetAngle = 1000;
+			break;
+		case 3:
+			cloudYaw.SetAngle = 300;
+			break;
+		}
 		MPU6050_GetData();
-		realSpeedData[timeCount + periodCount * PERIOD] = mpu6050.Gyro.Radian.x;
+		cloudYaw.SetSpeed = PID_SpecialCalc(&(cloudYaw.AnglePID),
+											 cloudYaw.Angle, cloudYaw.SetAngle, mpu6050.Gyro.Radian.x);
 		cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
-											   mpu6050.Gyro.Radian.x, cloudYaw.SetSpeed);
-		
+											   mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
+		MOTO_CloudPitchPID();
+		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
 		if(timeCount < PERIOD)
 			timeCount ++;
 		else
 		{
 			timeCount = 0;
-			periodCount++;
+			periodCount ++;
 		}
-		if(periodCount == 20)
+		if(periodCount == 4)
+		{
 			periodCount = 0;
+		}
+		
 		#endif
 	#else
 		MPU6050_GetData();
 		MOTO_CloudPitchPID();
-//		MOTO_CloudYawPID();
+		MOTO_CloudYawPID();
 		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
 			
 		if(timeCount % 5 == 0)

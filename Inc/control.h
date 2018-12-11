@@ -15,7 +15,7 @@
 #define CURRENT_MAX 16000				//电流最大值
 #define SPEED_MAX 5000
 #define PITCH_MID  -800					//云台pitch轴初值
-#define YAW_MID 930						//云台yaw轴初值
+#define YAW_MID 1000						//云台yaw轴初值
 
 
 /*****teler*******/

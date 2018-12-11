@@ -139,7 +139,7 @@ int main(void)
 	
 	
 	//选择上位机PID调参对象
-	rxPID.pidAdjust = &(cloudYaw.SpeedPID);
+	rxPID.pidAdjust = &(cloudYaw.AnglePID);
   /* USER CODE END 2 */
 
   /* Infinite loop */
