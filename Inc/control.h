@@ -134,8 +134,8 @@ extern Judge judge;
 void TelecontrollerData(void);
 void MOTO_PIDInit(void);
 void MOTO_UnderpanPID(void);
-void MOTO_CloudPitchPID(void);
-void MOTO_CloudYawPID(void);
+void MOTO_CloudPitchPID(u16 time_tick);
+void MOTO_CloudYawPID(u16 time_tick);
 void IMU_Init(void);
 
 

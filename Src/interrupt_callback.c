@@ -8,11 +8,17 @@
 
 
 #define PERIOD  1000
-#define IDENTIFICATION 0
-#define SINE		   0
-u16 timeCount = 0;
+#define IDENTIFICATION	0
+#define SINE			0
+#define PITCH			1
+#if PITCH
+	#define YAW				0
+#else
+	#define YAW				1
+#endif
+u16 timeCount 	= 0;
 u8 	periodCount = 0;
-int	periodIndex = -1;
+int	periodIndex = 70;
 u8 	setSpeedData[PERIOD*20]; //143040
 u8 	realSpeedData[PERIOD*20];
 u16 Period[64] = {1000,667,500,400,333,286,250,222,200,182,167,154,143,
@@ -29,6 +35,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM6)
 	{
 	#if IDENTIFICATION
+		#if YAW
 		#if SINE		
 		if(periodIndex < 64 && periodIndex >=0)
 		{
@@ -37,7 +44,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
 												   mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
 			
-			MOTO_CloudPitchPID();
+			MOTO_CloudPitchPID(timeCount);
 			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
 			
 			if(timeCount < Period[periodIndex])
@@ -59,7 +66,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			MPU6050_GetData();
 			cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
 												   mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
-			MOTO_CloudPitchPID();
+			MOTO_CloudPitchPID(timeCount);
 			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
 			if(timeCount < PERIOD)
 				timeCount ++;
@@ -114,7 +121,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 											 cloudYaw.Angle, cloudYaw.SetAngle, mpu6050.Gyro.Radian.x);
 		cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
 											   mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
-		MOTO_CloudPitchPID();
+		MOTO_CloudPitchPID(timeCount);
 		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
 		if(timeCount < PERIOD)
 			timeCount ++;
@@ -129,10 +136,114 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 		
 		#endif
+		#endif
+		#if PITCH
+		#if SINE		
+		if(periodIndex < 64 && periodIndex >=0)
+		{
+			cloudPitch.SetSpeed = 700*sin(2*PI* timeCount / Period[periodIndex]);	
+			MPU6050_GetData();
+			cloudPitch.CurrentOutput = PID_Calc(&(cloudPitch.SpeedPID),
+												   mpu6050.Gyro.Origin.y, cloudPitch.SetSpeed);
+			
+			MOTO_CloudYawPID(timeCount);
+			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
+			
+			if(timeCount < Period[periodIndex])
+				timeCount ++;
+			else
+			{
+				timeCount = 0;
+				periodCount++;
+			}
+			if(periodCount == 20)
+			{
+				periodCount = 0;	
+				periodIndex ++;
+			}
+		}
+		else
+		{
+			cloudPitch.SetSpeed = -500;//700*sin(2*PI*timeCount/PERIOD);	
+			MPU6050_GetData();
+			cloudPitch.CurrentOutput = PID_Calc(&(cloudPitch.SpeedPID),
+												   mpu6050.Gyro.Origin.y, cloudPitch.SetSpeed);
+			MOTO_CloudYawPID(timeCount);
+			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
+			if(timeCount < PERIOD)
+				timeCount ++;
+			else
+			{
+				timeCount = 0;
+				periodCount++;
+			}
+			if(periodCount == 20)
+			{
+				periodCount = 0;	
+				periodIndex ++;
+			}
+			if(periodIndex >1000)
+			{
+				periodIndex = 70;
+			}
+		}
+		#else
+//		switch(periodCount)
+//		{
+//		case 0:
+//			cloudPitch.SetSpeed = 0;
+//			break;
+//		case 1:
+//			cloudPitch.SetSpeed = 700;
+//			break;
+//		case 2:
+//			cloudPitch.SetSpeed = 0;
+//			break;
+//		case 3:
+//			cloudPitch.SetSpeed = -700;
+//			break;
+//		}
+		switch(periodCount)
+		{
+		case 0:
+			cloudPitch.SetAngle = PITCH_MID;
+			break;
+		case 1:
+			cloudPitch.SetAngle = PITCH_MID + 300;
+			break;
+		case 2:
+			cloudPitch.SetAngle = PITCH_MID;
+			break;
+		case 3:
+			cloudPitch.SetAngle = PITCH_MID - 300;
+			break;
+		}
+		MPU6050_GetData();
+		cloudPitch.SetSpeed = PID_SpecialCalc(&(cloudPitch.AnglePID),
+											   cloudPitch.Angle, cloudPitch.SetAngle, mpu6050.Gyro.Origin.y);
+		cloudPitch.CurrentOutput = PID_Calc(&(cloudPitch.SpeedPID),
+											mpu6050.Gyro.Origin.y, cloudPitch.SetSpeed);
+		MOTO_CloudYawPID(timeCount);
+		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
+		if(timeCount < PERIOD)
+			timeCount ++;
+		else
+		{
+			timeCount = 0;
+			periodCount ++;
+		}
+		if(periodCount == 4)
+		{
+			periodCount = 0;
+		}
+		
+		#endif
+		#endif
 	#else
 		MPU6050_GetData();
-		MOTO_CloudPitchPID();
-		MOTO_CloudYawPID();
+		//位置环10ms控制一次,速度环1ms控制一次
+		MOTO_CloudPitchPID(timeCount);
+		MOTO_CloudYawPID(timeCount);
 		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
 			
 		if(timeCount % 5 == 0)

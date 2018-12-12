@@ -137,9 +137,8 @@ int main(void)
 	MOTO_PIDInit();			
 	GREEN_LED = 0;
 	
-	
 	//选择上位机PID调参对象
-	rxPID.pidAdjust = &(cloudYaw.AnglePID);
+	rxPID.pidAdjust = &(cloudPitch.AnglePID);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -166,10 +165,10 @@ int main(void)
 //		output[1] = mpu6500.RollK.Angle;//4000 * sinf(a+1);	
 //		output[2] = atan2(mpu6500.AccX,mpu6500.AccZ)*180/PI;
 //		output[3] = mpu6500.GyroY;
-		output[1] = cloudYaw.CurrentOutput;
-		output[2] = cloudYaw.Angle;
-		output[0] = mpu6050.Gyro.Origin.x;
-		output[3] = cloudYaw.SetSpeed;
+		output[1] = cloudPitch.CurrentOutput;
+		output[2] = cloudPitch.Angle;
+		output[0] = mpu6050.Gyro.Origin.y;
+		output[3] = cloudPitch.SetSpeed;
 //		output[5] = cloudPitch.AnglePID.i*100;
 		UART_SendDataToPC(output, sizeof(output));
 //		MPU6050_GetData();
