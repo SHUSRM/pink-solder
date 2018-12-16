@@ -36,16 +36,19 @@
 #include "stm32f4xx_it.h"
 
 /* USER CODE BEGIN 0 */
-#include "control.h"
-#include "timer.h"
-#include "can.h"
+#include "usart.h"
+#include "Kalman.h"
+uint32_t timeout = 0;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
 extern CAN_HandleTypeDef hcan1;
 extern TIM_HandleTypeDef htim6;
 extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart3_rx;
+extern UART_HandleTypeDef huart4;
 extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart6;
 
 /******************************************************************************/
@@ -76,6 +79,7 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+		printf("err");
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
   /* USER CODE BEGIN HardFault_IRQn 1 */
@@ -199,17 +203,17 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-* @brief This function handles CAN1 TX interrupts.
+* @brief This function handles DMA1 stream1 global interrupt.
 */
-void CAN1_TX_IRQHandler(void)
+void DMA1_Stream1_IRQHandler(void)
 {
-  /* USER CODE BEGIN CAN1_TX_IRQn 0 */
+  /* USER CODE BEGIN DMA1_Stream1_IRQn 0 */
 
-  /* USER CODE END CAN1_TX_IRQn 0 */
-  HAL_CAN_IRQHandler(&hcan1);
-  /* USER CODE BEGIN CAN1_TX_IRQn 1 */
+  /* USER CODE END DMA1_Stream1_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart3_rx);
+  /* USER CODE BEGIN DMA1_Stream1_IRQn 1 */
 
-  /* USER CODE END CAN1_TX_IRQn 1 */
+  /* USER CODE END DMA1_Stream1_IRQn 1 */
 }
 
 /**
@@ -218,8 +222,7 @@ void CAN1_TX_IRQHandler(void)
 void CAN1_RX0_IRQHandler(void)
 {
   /* USER CODE BEGIN CAN1_RX0_IRQn 0 */
-	HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &Rx1Message, aData);
-	CAN_Getdata(&hcan1, &Rx1Message, aData);
+
   /* USER CODE END CAN1_RX0_IRQn 0 */
   HAL_CAN_IRQHandler(&hcan1);
   /* USER CODE BEGIN CAN1_RX0_IRQn 1 */
@@ -233,26 +236,92 @@ void CAN1_RX0_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
-	uint32_t timeout=0;
+	//uint32_t timeout = 0;
   /* USER CODE END USART2_IRQn 0 */
   HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */
-	timeout=0;
-    while (HAL_UART_GetState(&huart2) != HAL_UART_STATE_READY)//等待就绪
+	timeout = 0;
+	while (HAL_UART_GetState(&huart2) != HAL_UART_STATE_READY) //等待就绪
 	{
-	 timeout++;////超时处理
-     if(timeout>HAL_MAX_DELAY) break;		
-	
+		timeout++; ////超时处理
+		if (timeout > HAL_MAX_DELAY)
+			break;
 	}
-     
-	timeout=0;
-	while(HAL_UART_Receive_IT(&huart2,camera.recieve,1) != HAL_OK)//一次处理完成之后，重新开启中断并设置RxXferCount为1
+
+	timeout = 0;
+	while (HAL_UART_Receive_IT(&huart2, camera.Recieve, 1) != HAL_OK) //一次处理完成之后，重新开启中断并设置RxXferCount为1
 	{
-	 timeout++; //超时处理
-	 if(timeout>HAL_MAX_DELAY) break;	
+		timeout++; //超时处理
+		if (timeout > HAL_MAX_DELAY)
+			break;
 	}
-	
   /* USER CODE END USART2_IRQn 1 */
+}
+
+/**
+* @brief This function handles USART3 global interrupt.
+*/
+void USART3_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART3_IRQn 0 */
+	//uint32_t timeout = 0;
+  /* USER CODE END USART3_IRQn 0 */
+  HAL_UART_IRQHandler(&huart3);
+  /* USER CODE BEGIN USART3_IRQn 1 */
+	timeout = 0;
+#if 0
+	while (HAL_UART_GetState(&huart3) != HAL_UART_STATE_READY) //等待就绪
+	{
+		timeout++; ////超时处理
+		if (timeout > HAL_MAX_DELAY)
+			break;
+	}
+	timeout = 0;
+	while (HAL_UART_Receive_IT(&huart3, &mpu6050.mpuReadBuf, 1) != HAL_OK) //一次处理完成之后，重新开启中断并设置RxXferCount为1
+	{
+		timeout++; //超时处理
+		if (timeout > HAL_MAX_DELAY)
+			break;
+	}
+#else
+	if(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_IDLE))
+	{
+		__HAL_UART_CLEAR_IDLEFLAG(&huart3);
+		timeout = __HAL_DMA_GET_COUNTER(huart3.hdmarx);
+		timeout = huart3.hdmarx->Instance->NDTR;
+		HAL_UART_Receive_DMA(&huart3,mpu6050.RxBuf,sizeof(mpu6050.RxBuf));
+	}
+
+#endif
+  /* USER CODE END USART3_IRQn 1 */
+}
+
+/**
+* @brief This function handles UART4 global interrupt.
+*/
+void UART4_IRQHandler(void)
+{
+  /* USER CODE BEGIN UART4_IRQn 0 */
+	//uint32_t timeout = 0;
+  /* USER CODE END UART4_IRQn 0 */
+  HAL_UART_IRQHandler(&huart4);
+  /* USER CODE BEGIN UART4_IRQn 1 */
+	timeout = 0;
+	while (HAL_UART_GetState(&huart4) != HAL_UART_STATE_READY) //等待就绪
+	{
+		timeout++; ////超时处理
+		if (timeout > HAL_MAX_DELAY)
+			break;
+	}
+
+	timeout = 0;
+	while (HAL_UART_Receive_IT(&huart4, &rxPID.pidReadBuf, 1) != HAL_OK) //一次处理完成之后，重新开启中断并设置RxXferCount为1
+	{
+		timeout++; //超时处理
+		if (timeout > HAL_MAX_DELAY)
+			break;
+	}
+  /* USER CODE END UART4_IRQn 1 */
 }
 
 /**
@@ -261,7 +330,7 @@ void USART2_IRQHandler(void)
 void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
-	Test_task();
+
   /* USER CODE END TIM6_DAC_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
@@ -275,12 +344,11 @@ void TIM6_DAC_IRQHandler(void)
 void DMA2_Stream2_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream2_IRQn 0 */
-//  xx[1]=((teledata_rx[0]| (teledata_rx[1] << 8)) & 0x07ff)-1024;
-    
+
   /* USER CODE END DMA2_Stream2_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_usart1_rx);
   /* USER CODE BEGIN DMA2_Stream2_IRQn 1 */
-	telecontroller_data();
+
   /* USER CODE END DMA2_Stream2_IRQn 1 */
 }
 
@@ -290,23 +358,24 @@ void DMA2_Stream2_IRQHandler(void)
 void USART6_IRQHandler(void)
 {
   /* USER CODE BEGIN USART6_IRQn 0 */
-	uint32_t timeout=0;
+	uint32_t timeout = 0;
   /* USER CODE END USART6_IRQn 0 */
   HAL_UART_IRQHandler(&huart6);
   /* USER CODE BEGIN USART6_IRQn 1 */
-	timeout=0;
-    while (HAL_UART_GetState(&huart6) != HAL_UART_STATE_READY)//等待就绪
+	timeout = 0;
+	while (HAL_UART_GetState(&huart6) != HAL_UART_STATE_READY) //等待就绪
 	{
-	 timeout++;////超时处理
-     if(timeout>HAL_MAX_DELAY) break;		
-	
+		timeout++; ////超时处理
+		if (timeout > HAL_MAX_DELAY)
+			break;
 	}
-     
-	timeout=0;
-	while(HAL_UART_Receive_IT(&huart6,judge.recieve,1) != HAL_OK)//一次处理完成之后，重新开启中断并设置RxXferCount为1
+
+	timeout = 0;
+	while (HAL_UART_Receive_IT(&huart6, judge.Recieve, 1) != HAL_OK) //一次处理完成之后，重新开启中断并设置RxXferCount为1
 	{
-	 timeout++; //超时处理
-	 if(timeout>HAL_MAX_DELAY) break;	
+		timeout++; //超时处理
+		if (timeout > HAL_MAX_DELAY)
+			break;
 	}
   /* USER CODE END USART6_IRQn 1 */
 }

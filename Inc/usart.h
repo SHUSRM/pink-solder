@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file           : main.h
-  * @brief          : Header for main.c file.
-  *                   This file contains the common defines of the application.
+  * File Name          : USART.h
+  * Description        : This file provides code for the configuration
+  *                      of the USART instances.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -36,55 +36,68 @@
   *
   ******************************************************************************
   */
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H__
-#define __MAIN_H__
-
-/* Includes ------------------------------------------------------------------*/
-
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private define ------------------------------------------------------------*/
-
-#define BEEP_Pin GPIO_PIN_4
-#define BEEP_GPIO_Port GPIOB
-#define IIC_SDA_Pin GPIO_PIN_4
-#define IIC_SDA_GPIO_Port GPIOE
-#define IIC_SCL_Pin GPIO_PIN_5
-#define IIC_SCL_GPIO_Port GPIOE
-#define SPI5_CS_Pin GPIO_PIN_6
-#define SPI5_CS_GPIO_Port GPIOF
-#define KEY_Pin GPIO_PIN_10
-#define KEY_GPIO_Port GPIOD
-#define GREEN_LED_Pin GPIO_PIN_14
-#define GREEN_LED_GPIO_Port GPIOF
-#define RED_LED_Pin GPIO_PIN_7
-#define RED_LED_GPIO_Port GPIOE
-
-/* ########################## Assert Selection ############################## */
-/**
-  * @brief Uncomment the line below to expanse the "assert_param" macro in the 
-  *        HAL drivers code
-  */
-/* #define USE_FULL_ASSERT    1U */
-
-/* USER CODE BEGIN Private defines */
-
-/* USER CODE END Private defines */
-
+#ifndef __usart_H
+#define __usart_H
 #ifdef __cplusplus
  extern "C" {
 #endif
-void _Error_Handler(char *, int);
 
-#define Error_Handler() _Error_Handler(__FILE__, __LINE__)
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f4xx_hal.h"
+#include "main.h"
+
+/* USER CODE BEGIN Includes */
+#include "sys.h"
+#include "control.h" 
+#include "pid.h"
+
+/* USER CODE END Includes */
+
+extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart6;
+
+/* USER CODE BEGIN Private defines */
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
+
+
+//extern uint8_t 	RX_PID_Count;
+//extern uint8_t 	RX_PID_Buf[20];
+//extern u8		pidReadBuf;
+//extern u8		RX_PID_Sum;
+
+/* USER CODE END Private defines */
+
+extern void _Error_Handler(char *, int);
+
+void MX_UART4_Init(void);
+void MX_USART1_UART_Init(void);
+void MX_USART2_UART_Init(void);
+void MX_USART3_UART_Init(void);
+void MX_USART6_UART_Init(void);
+
+/* USER CODE BEGIN Prototypes */
+
+void Float2Byte(float *target,unsigned char *buf,unsigned char beg);
+void usart_send_char(u8 c);
+void UART_SendDataToPC(float *data, u8 n);
+
+/* USER CODE END Prototypes */
+
 #ifdef __cplusplus
 }
 #endif
+#endif /*__ usart_H */
 
-#endif /* __MAIN_H__ */
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file           : main.h
-  * @brief          : Header for main.c file.
-  *                   This file contains the common defines of the application.
+  * File Name          : CAN.h
+  * Description        : This file provides code for the configuration
+  *                      of the CAN instances.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -36,55 +36,55 @@
   *
   ******************************************************************************
   */
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H__
-#define __MAIN_H__
-
-/* Includes ------------------------------------------------------------------*/
-
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private define ------------------------------------------------------------*/
-
-#define BEEP_Pin GPIO_PIN_4
-#define BEEP_GPIO_Port GPIOB
-#define IIC_SDA_Pin GPIO_PIN_4
-#define IIC_SDA_GPIO_Port GPIOE
-#define IIC_SCL_Pin GPIO_PIN_5
-#define IIC_SCL_GPIO_Port GPIOE
-#define SPI5_CS_Pin GPIO_PIN_6
-#define SPI5_CS_GPIO_Port GPIOF
-#define KEY_Pin GPIO_PIN_10
-#define KEY_GPIO_Port GPIOD
-#define GREEN_LED_Pin GPIO_PIN_14
-#define GREEN_LED_GPIO_Port GPIOF
-#define RED_LED_Pin GPIO_PIN_7
-#define RED_LED_GPIO_Port GPIOE
-
-/* ########################## Assert Selection ############################## */
-/**
-  * @brief Uncomment the line below to expanse the "assert_param" macro in the 
-  *        HAL drivers code
-  */
-/* #define USE_FULL_ASSERT    1U */
-
-/* USER CODE BEGIN Private defines */
-
-/* USER CODE END Private defines */
-
+#ifndef __can_H
+#define __can_H
 #ifdef __cplusplus
  extern "C" {
 #endif
-void _Error_Handler(char *, int);
 
-#define Error_Handler() _Error_Handler(__FILE__, __LINE__)
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f4xx_hal.h"
+#include "main.h"
+
+/* USER CODE BEGIN Includes */
+#include "sys.h"
+/* USER CODE END Includes */
+
+extern CAN_HandleTypeDef hcan1;
+
+/* USER CODE BEGIN Private defines */
+extern CAN_HandleTypeDef hcan1;
+
+extern CAN_TxHeaderTypeDef  Tx1Message;
+extern CAN_RxHeaderTypeDef  Rx1Message;
+extern u8 txData[8];
+extern u8 canRxDataBuf[8];
+/* USER CODE END Private defines */
+
+extern void _Error_Handler(char *, int);
+
+void MX_CAN1_Init(void);
+
+/* USER CODE BEGIN Prototypes */
+void CAN1_FilterInit(void);
+void CAN_GetMotoData(CAN_RxHeaderTypeDef *pHeader, uint8_t aData[]);
+void CAN_SetUnderpanMotorCurrent(int16_t iq1,int16_t iq2,int16_t iq3,int16_t iq4);
+void CAN_SetCloudMotorCurrent(int16_t iq1,int16_t iq2,int16_t iq3);
+
+/* USER CODE END Prototypes */
+
 #ifdef __cplusplus
 }
 #endif
+#endif /*__ can_H */
 
-#endif /* __MAIN_H__ */
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

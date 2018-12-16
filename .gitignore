@@ -9,5 +9,14 @@
 *.d
 *.lst
 *.StrangeChen
-*.uvoptx
-*.uvprojx
+*.json
+*.iex
+*.axf
+*.lnp
+*.map
+*.sct
+*.dep
+*.Bak
+*.__i
+*.hex
+*.hex
