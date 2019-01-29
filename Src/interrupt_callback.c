@@ -6,25 +6,24 @@
 #include "math.h"
 #include "string.h"
 
-
-#define PERIOD  1000
-#define IDENTIFICATION	0
-#define SINE			0
-#define PITCH			1
+#define PERIOD 1000
+#define IDENTIFICATION 0
+#define SINE 0
+#define PITCH 1
 #if PITCH
-	#define YAW				0
+#define YAW 0
 #else
-	#define YAW				1
+#define YAW 1
 #endif
-u16 timeCount 	= 0;
-u8 	periodCount = 0;
-int	periodIndex = 70;
-u8 	setSpeedData[PERIOD*20]; //143040
-u8 	realSpeedData[PERIOD*20];
-u16 Period[64] = {1000,667,500,400,333,286,250,222,200,182,167,154,143,
-				133,125,118,111,105,100,95,91,87,83,80,77,74,71,69,67,65,
-				63,61,59,57,56,54,53,51,50,49,48,47,45,42,38,36,33,31,29,28,
-				26,25,20,17,14,13,11,10,9,8,5,4,3,2};
+u16 timeCount = 0;
+u8 periodCount = 0;
+int periodIndex = 70;
+u8 setSpeedData[PERIOD * 20]; //143040
+u8 realSpeedData[PERIOD * 20];
+u16 Period[64] = {1000, 667, 500, 400, 333, 286, 250, 222, 200, 182, 167, 154, 143,
+				  133, 125, 118, 111, 105, 100, 95, 91, 87, 83, 80, 77, 74, 71, 69, 67, 65,
+				  63, 61, 59, 57, 56, 54, 53, 51, 50, 49, 48, 47, 45, 42, 38, 36, 33, 31, 29, 28,
+				  26, 25, 20, 17, 14, 13, 11, 10, 9, 8, 5, 4, 3, 2};
 
 //定时器溢出中断
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -34,74 +33,74 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 	if (htim->Instance == TIM6)
 	{
-	#if IDENTIFICATION
-		#if YAW
-		#if SINE		
-		if(periodIndex < 64 && periodIndex >=0)
+#if IDENTIFICATION
+#if YAW
+#if SINE
+		if (periodIndex < 64 && periodIndex >= 0)
 		{
-			cloudYaw.SetSpeed = 700*sin(2*PI* timeCount / Period[periodIndex]);	
+			cloudYaw.SetSpeed = 700 * sin(2 * PI * timeCount / Period[periodIndex]);
 			MPU6050_GetData();
 			cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
-												   mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
-			
+											  mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
+
 			MOTO_CloudPitchPID(timeCount);
-			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
-			
-			if(timeCount < Period[periodIndex])
-				timeCount ++;
+			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput, cloudYaw.CurrentOutput, 0);
+
+			if (timeCount < Period[periodIndex])
+				timeCount++;
 			else
 			{
 				timeCount = 0;
 				periodCount++;
 			}
-			if(periodCount == 20)
+			if (periodCount == 20)
 			{
-				periodCount = 0;	
-				periodIndex ++;
+				periodCount = 0;
+				periodIndex++;
 			}
 		}
 		else
 		{
-			cloudYaw.SetSpeed = 0;//700*sin(2*PI*timeCount/PERIOD);	
+			cloudYaw.SetSpeed = 0; //700*sin(2*PI*timeCount/PERIOD);
 			MPU6050_GetData();
 			cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
-												   mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
+											  mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
 			MOTO_CloudPitchPID(timeCount);
-			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
-			if(timeCount < PERIOD)
-				timeCount ++;
+			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput, cloudYaw.CurrentOutput, 0);
+			if (timeCount < PERIOD)
+				timeCount++;
 			else
 			{
 				timeCount = 0;
 				periodCount++;
 			}
-			if(periodCount == 20)
+			if (periodCount == 20)
 			{
-				periodCount = 0;	
-				periodIndex ++;
+				periodCount = 0;
+				periodIndex++;
 			}
-			if(periodIndex >1000)
+			if (periodIndex > 1000)
 			{
 				periodIndex = 70;
 			}
 		}
-		#else
-//		switch(periodCount)
-//		{
-//		case 0:
-//			cloudYaw.SetSpeed = 0;
-//			break;
-//		case 1:
-//			cloudYaw.SetSpeed = 700;
-//			break;
-//		case 2:
-//			cloudYaw.SetSpeed = 0;
-//			break;
-//		case 3:
-//			cloudYaw.SetSpeed = -700;
-//			break;
-//		}
-		switch(periodCount)
+#else
+		//		switch(periodCount)
+		//		{
+		//		case 0:
+		//			cloudYaw.SetSpeed = 0;
+		//			break;
+		//		case 1:
+		//			cloudYaw.SetSpeed = 700;
+		//			break;
+		//		case 2:
+		//			cloudYaw.SetSpeed = 0;
+		//			break;
+		//		case 3:
+		//			cloudYaw.SetSpeed = -700;
+		//			break;
+		//		}
+		switch (periodCount)
 		{
 		case 0:
 			cloudYaw.SetAngle = 1000;
@@ -118,92 +117,92 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 		MPU6050_GetData();
 		cloudYaw.SetSpeed = PID_SpecialCalc(&(cloudYaw.AnglePID),
-											 cloudYaw.Angle, cloudYaw.SetAngle, mpu6050.Gyro.Radian.x);
+											cloudYaw.Angle, cloudYaw.SetAngle, mpu6050.Gyro.Radian.x);
 		cloudYaw.CurrentOutput = PID_Calc(&(cloudYaw.SpeedPID),
-											   mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
+										  mpu6050.Gyro.Origin.x, cloudYaw.SetSpeed);
 		MOTO_CloudPitchPID(timeCount);
-		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
-		if(timeCount < PERIOD)
-			timeCount ++;
+		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput, cloudYaw.CurrentOutput, 0);
+		if (timeCount < PERIOD)
+			timeCount++;
 		else
 		{
 			timeCount = 0;
-			periodCount ++;
+			periodCount++;
 		}
-		if(periodCount == 4)
+		if (periodCount == 4)
 		{
 			periodCount = 0;
 		}
-		
-		#endif
-		#endif
-		#if PITCH
-		#if SINE		
-		if(periodIndex < 64 && periodIndex >=0)
+
+#endif
+#endif
+#if PITCH
+#if SINE
+		if (periodIndex < 64 && periodIndex >= 0)
 		{
-			cloudPitch.SetSpeed = 700*sin(2*PI* timeCount / Period[periodIndex]);	
+			cloudPitch.SetSpeed = 700 * sin(2 * PI * timeCount / Period[periodIndex]);
 			MPU6050_GetData();
 			cloudPitch.CurrentOutput = PID_Calc(&(cloudPitch.SpeedPID),
-												   mpu6050.Gyro.Origin.y, cloudPitch.SetSpeed);
-			
+												mpu6050.Gyro.Origin.y, cloudPitch.SetSpeed);
+
 			MOTO_CloudYawPID(timeCount);
-			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
-			
-			if(timeCount < Period[periodIndex])
-				timeCount ++;
+			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput, cloudYaw.CurrentOutput, 0);
+
+			if (timeCount < Period[periodIndex])
+				timeCount++;
 			else
 			{
 				timeCount = 0;
 				periodCount++;
 			}
-			if(periodCount == 20)
+			if (periodCount == 20)
 			{
-				periodCount = 0;	
-				periodIndex ++;
+				periodCount = 0;
+				periodIndex++;
 			}
 		}
 		else
 		{
-			cloudPitch.SetSpeed = -500;//700*sin(2*PI*timeCount/PERIOD);	
+			cloudPitch.SetSpeed = -500; //700*sin(2*PI*timeCount/PERIOD);
 			MPU6050_GetData();
 			cloudPitch.CurrentOutput = PID_Calc(&(cloudPitch.SpeedPID),
-												   mpu6050.Gyro.Origin.y, cloudPitch.SetSpeed);
+												mpu6050.Gyro.Origin.y, cloudPitch.SetSpeed);
 			MOTO_CloudYawPID(timeCount);
-			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
-			if(timeCount < PERIOD)
-				timeCount ++;
+			CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput, cloudYaw.CurrentOutput, 0);
+			if (timeCount < PERIOD)
+				timeCount++;
 			else
 			{
 				timeCount = 0;
 				periodCount++;
 			}
-			if(periodCount == 20)
+			if (periodCount == 20)
 			{
-				periodCount = 0;	
-				periodIndex ++;
+				periodCount = 0;
+				periodIndex++;
 			}
-			if(periodIndex >1000)
+			if (periodIndex > 1000)
 			{
 				periodIndex = 70;
 			}
 		}
-		#else
-//		switch(periodCount)
-//		{
-//		case 0:
-//			cloudPitch.SetSpeed = 0;
-//			break;
-//		case 1:
-//			cloudPitch.SetSpeed = 700;
-//			break;
-//		case 2:
-//			cloudPitch.SetSpeed = 0;
-//			break;
-//		case 3:
-//			cloudPitch.SetSpeed = -700;
-//			break;
-//		}
-		switch(periodCount)
+#else
+		//		switch(periodCount)
+		//		{
+		//		case 0:
+		//			cloudPitch.SetSpeed = 0;
+		//			break;
+		//		case 1:
+		//			cloudPitch.SetSpeed = 700;
+		//			break;
+		//		case 2:
+		//			cloudPitch.SetSpeed = 0;
+		//			break;
+		//		case 3:
+		//			cloudPitch.SetSpeed = -700;
+		//			break;
+		//		}
+		switch (periodCount)
 		{
 		case 0:
 			cloudPitch.SetAngle = PITCH_MID;
@@ -220,51 +219,51 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 		MPU6050_GetData();
 		cloudPitch.SetSpeed = PID_SpecialCalc(&(cloudPitch.AnglePID),
-											   cloudPitch.Angle, cloudPitch.SetAngle, mpu6050.Gyro.Origin.y);
+											  cloudPitch.Angle, cloudPitch.SetAngle, mpu6050.Gyro.Origin.y);
 		cloudPitch.CurrentOutput = PID_Calc(&(cloudPitch.SpeedPID),
 											mpu6050.Gyro.Origin.y, cloudPitch.SetSpeed);
 		MOTO_CloudYawPID(timeCount);
-		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);
-		if(timeCount < PERIOD)
-			timeCount ++;
+		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput, cloudYaw.CurrentOutput, 0);
+		if (timeCount < PERIOD)
+			timeCount++;
 		else
 		{
 			timeCount = 0;
-			periodCount ++;
+			periodCount++;
 		}
-		if(periodCount == 4)
+		if (periodCount == 4)
 		{
 			periodCount = 0;
 		}
-		
-		#endif
-		#endif
-	#else
+
+#endif
+#endif
+#else
 		MPU6050_GetData();
 		//位置环10ms控制一次,速度环1ms控制一次
 		MOTO_CloudPitchPID(timeCount);
 		MOTO_CloudYawPID(timeCount);
-		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput,cloudYaw.CurrentOutput,0);		
-			
-		if(timeCount % 5 == 0)
+		CAN_SetCloudMotorCurrent(cloudPitch.CurrentOutput, cloudYaw.CurrentOutput, 0);
+
+		if (timeCount % 5 == 0)
 		{
-//			MPU6050_GetData();
-//			KalmanFilter(atan2(mpu6050.Acc.Origin.x,mpu6050.Acc.Origin.z)*180/PI,-mpu6050.Gyro.Origin.y/16.4,&mpu6050.PitchK);		
-			
-//			MPU6500_GetData();	
+			//			MPU6050_GetData();
+			//			KalmanFilter(atan2(mpu6050.Acc.Origin.x,mpu6050.Acc.Origin.z)*180/PI,-mpu6050.Gyro.Origin.y/16.4,&mpu6050.PitchK);
+
+			MPU6500_GetData();
 		}
-		if(timeCount % 10 == 0)
+		if (timeCount % 10 == 0)
 		{
-//			MOTO_UnderpanPID();
-//			CAN_SetUnderpanMotorCurrent(underpan[0].CurrentOutput, underpan[1].CurrentOutput,
-//										underpan[2].CurrentOutput, underpan[3].CurrentOutput);
-		}	
-		
-		if(timeCount < 1000)
-			timeCount ++;
+			//			MOTO_UnderpanPID();
+			//			CAN_SetUnderpanMotorCurrent(underpan[0].CurrentOutput, underpan[1].CurrentOutput,
+			//										underpan[2].CurrentOutput, underpan[3].CurrentOutput);
+		}
+
+		if (timeCount < 1000)
+			timeCount++;
 		else
 			timeCount = 0;
-	#endif	
+#endif
 	}
 }
 
@@ -278,6 +277,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 }
 
 char charBuf[4];
+uint8_t cheat_ready=1;
+double angle;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	/************遥控器数据处理*************/
@@ -340,6 +341,23 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			{
 				camera.Transmit[0] = 'R';
 				HAL_UART_Transmit(&huart2, camera.Transmit, 1, 1000);
+				if (tele_data.s1 == 1)
+				{
+					if (cheat_ready == 1)
+					{
+						angle = atan(camera.Y * 0.00222) * 1004.05;
+						cloudPitch.SetAngle = cloudPitch.Angle + angle;
+						angle = atan(camera.X * 0.00222) * 1304.05;
+						cloudYaw.SetAngle = cloudYaw.Angle - angle;
+						cheat_ready = 0;
+					}
+					
+					if (cloudYaw.Angle - cloudYaw.SetAngle > -30 && cloudYaw.Angle - cloudYaw.SetAngle < 30)
+					{
+						if (cloudPitch.Angle - cloudPitch.SetAngle > -100 && cloudPitch.Angle - cloudPitch.SetAngle < 100)
+							cheat_ready = 1;
+					}
+				}
 			}
 			else
 			{
@@ -350,12 +368,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			}
 			camera.Count = 0;
 			break;
+			
+			if(cloudPitch.SetAngle<(PITCH_MID-600)) cloudPitch.SetAngle=PITCH_MID-600;
+			if(cloudPitch.SetAngle>(PITCH_MID+600)) cloudPitch.SetAngle=PITCH_MID+600;
+			
+			if(cloudYaw.SetAngle<(YAW_MID-800)) cloudYaw.SetAngle=YAW_MID-800;
+			if(cloudYaw.SetAngle>(YAW_MID+800)) cloudYaw.SetAngle=YAW_MID+800;
+			
 		}
 	}
 	/************串口陀螺仪数据处理************/
-	else if(huart->Instance == USART3)
+	else if (huart->Instance == USART3)
 	{
-	#if 0
+#if 0
 		if ((mpu6050.RxCount & 0x8000) == 0) //接收未完成
 		{
 			mpu6050.RxBuf[mpu6050.RxCount & 0X3FFF] = mpu6050.mpuReadBuf;
@@ -393,23 +418,23 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				}
 			}
 		}
-	#endif
-		if(mpu6050.RxBuf[11] == 0x55 && mpu6050.RxBuf[12] == 0x52)
+#endif
+		if (mpu6050.RxBuf[11] == 0x55 && mpu6050.RxBuf[12] == 0x52)
 		{
 			for (int i = 0; i < 10; i++)
-					mpu6050.RxSum += mpu6050.RxBuf[i+11];
+				mpu6050.RxSum += mpu6050.RxBuf[i + 11];
 			if (mpu6050.RxSum == mpu6050.RxBuf[21])
 			{
 				mpu6050.Auto.GyroX = ((short)(mpu6050.RxBuf[14] << 8 | mpu6050.RxBuf[13])) / 32768.0 * 2000;
 				mpu6050.Auto.GyroY = ((short)((mpu6050.RxBuf[16] << 8) | mpu6050.RxBuf[15])) / 32768.0 * 2000;
 				mpu6050.Auto.GyroZ = ((short)((mpu6050.RxBuf[18] << 8) | mpu6050.RxBuf[17])) / 32768.0 * 2000;
 				mpu6050.RxSum = 0;
-			}	
+			}
 		}
 		else
 		{
 			IMU_Init();
-			HAL_UART_Receive_DMA(&huart3,mpu6050.RxBuf,sizeof(mpu6050.RxBuf));
+			HAL_UART_Receive_DMA(&huart3, mpu6050.RxBuf, sizeof(mpu6050.RxBuf));
 		}
 	}
 	/*************PID参数串口数据处理***********/
@@ -470,6 +495,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 //{
 //	if(huart->ErrorCode == HAL_UART_ERROR_ORE)
 //	{
-//		
+//
 //	}
 //}

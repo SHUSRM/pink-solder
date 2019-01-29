@@ -10,7 +10,7 @@
             <DataFile Name="..\222.csv\" />
             <RawFile Name="..\222.csv\" />
             <Scope>
-                <Options TimeResolutionUs="50000" />
+                <Options TimeResolutionUs="100000" />
             </Scope>
         </Configuration>
         <Windows>
@@ -19,10 +19,10 @@
         </Windows>
         <SelectedSymbols>
             <Symbol>
-                <Options Name="SetAngle" Address="0x20000D76" Type="short" TypeID="11" Size="2" GraphColorRed="160" GraphColorGreen="32" GraphColorBlue="240" YMinSampled="256" YMaxSampled="1700" YAvgSampled="1029" Offset="4" ShowInGraph="1" YOffset="200" IsAutoConfig="0" YResolution="2000" MaxValue="40000" File="..\Src\control.c" Scope="0" DrawStyle="0" />
+                <Options Name="SetAngle" Address="0x20000BF6" Type="short" TypeID="11" Size="2" GraphColorRed="255" GraphColorGreen="215" GraphColorBlue="0" YMinSampled="-800" YMaxSampled="-800" YAvgSampled="-800" Offset="4" ShowInGraph="1" YOffset="370" IsAutoConfig="0" YResolution="500" MaxValue="3440" File="..\Src\control.c" Scope="0" DrawStyle="0" />
             </Symbol>
             <Symbol>
-                <Options Name="Angle" Address="0x20000D4C" Type="short" TypeID="11" Size="2" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="0" YMaxSampled="1715" YAvgSampled="421" Offset="6" ShowInGraph="1" YOffset="200" IsAutoConfig="0" YResolution="2000" MaxValue="40000" File="..\Src\control.c" Scope="0" DrawStyle="0" />
+                <Options Name="Angle" Address="0x20000BCC" Type="short" TypeID="11" Size="2" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="-1430" YMaxSampled="7504" YAvgSampled="-821" Offset="6" ShowInGraph="1" YOffset="370" IsAutoConfig="0" YResolution="500" MaxValue="10000" File="..\Src\control.c" Scope="0" DrawStyle="0" />
             </Symbol>
         </SelectedSymbols>
     </Project>

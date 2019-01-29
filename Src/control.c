@@ -49,13 +49,13 @@ void MOTO_PIDInit()
 	}
 	
 	PID_StructInit(&(cloudPitch.AnglePID), POSITION_PID, 5000, 1000,
-				   -7,0,0);//-5.6,-0.002,0.5);//5, 0.01f, -1.3f);
+				   -8,0,0);//-5.6,-0.002,0.5);//5, 0.01f, -1.3f);
 	PID_StructInit(&(cloudPitch.SpeedPID), POSITION_PID, 5000, 500,
-				   2.3,0.003,0);//5.2,0.08,0);// 5, 0.01f, -1.3f);
+				   2.0,0.003,0);//5.2,0.08,0);// 5, 0.01f, -1.3f);
 	PID_StructInit(&(cloudYaw.AnglePID), POSITION_PID, 5000, 1000,
 				   6,0,0);//5, -0.01f, -2.7f);
 	PID_StructInit(&(cloudYaw.SpeedPID), POSITION_PID, 5000, 500,
-				   -4.0,-0.006,0);//-1.2,-0.04,-42);
+				   -3.0,-0.003,0);//-1.2,-0.04,-42);
 }
 
 /*****接收遥控器数据*****/
@@ -77,6 +77,28 @@ void TelecontrollerData(void)
 	tele_data.press_r = teledata_rx[13];
 	tele_data.key = teledata_rx[14] | (teledata_rx[15] << 8);
 	tele_data.resv = teledata_rx[16] | (teledata_rx[17] << 8);
+	
+	if (tele_data.s1==2)
+	{
+		cloudPitch.SetAngle = PITCH_MID-1.0*tele_data.ch1;
+		cloudYaw.SetAngle = YAW_MID-1.0*tele_data.ch0;
+
+		if(cloudPitch.SetAngle<(PITCH_MID-600))
+			cloudPitch.SetAngle=PITCH_MID-600;
+		if(cloudPitch.SetAngle>(PITCH_MID+600))
+			cloudPitch.SetAngle=PITCH_MID+600;
+		
+		if(cloudYaw.SetAngle<(YAW_MID-800))
+			cloudYaw.SetAngle=YAW_MID-800;
+		if(cloudYaw.SetAngle>(YAW_MID+800))
+			cloudYaw.SetAngle=YAW_MID+800;
+	}
+	
+	if (tele_data.s2==1)
+		bodan_speed=-500;
+	
+	else 
+		bodan_speed=0;
 }
 /*****底盘pid控制程序*****************
 包含速度pid（内环）与电流pid控制（外环）
@@ -103,7 +125,7 @@ void MOTO_UnderpanPID()
 /**************云台pitch方向pid控制***************/
 void MOTO_CloudPitchPID(u16 time_tick)
 {  
-	cloudPitch.SetAngle = PITCH_MID + 1.0 * tele_data.ch1;
+	cloudPitch.SetAngle = PITCH_MID - 1.0 * tele_data.ch1 - mpu6500.PitchK.Angle*8192/360;
 	if (cloudPitch.SetAngle < (PITCH_MID - 600))
 		cloudPitch.SetAngle = PITCH_MID - 600;
 	if (cloudPitch.SetAngle > (PITCH_MID + 600))
